@@ -52,6 +52,21 @@ giveaways:
       command: "addklucze %player% 1 Podniebna"
       # Prize, which will be displayed in the giveaway message (required)
       prize_formatted: "1x Podniebna"
+    requirements:
+      # User must have VIP but not ADMIN role to join the giveaway (not required)
+      group:
+        VIP: true
+        ADMIN: false
+      # Placeholder value of `chatgames_points` must be between 50 and 100 to join the giveaway (not required)
+      placeholder:
+        chatgames_points:
+          over: 50
+          under: 100
+      # User must have permission `mcgramy.giveaway` but not `op` to join the giveaway (not required) [`-` is replaced with `.`]
+      permission:
+        op: false
+        mcgramy-giveaway: true
+
 
 
 entered:

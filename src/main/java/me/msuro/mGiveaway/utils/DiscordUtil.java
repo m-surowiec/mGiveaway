@@ -98,11 +98,17 @@ public class DiscordUtil {
     }
 
     public void logActivity() {
-        instance.getLogger().info("Activity set to: " + Objects.requireNonNull(jda.getPresence().getActivity()).getName());
+        instance.getServer().getConsoleSender().sendMessage(TextUtil.process("[mGiveaway] Activity set to: &7" + jda.getPresence().getActivity().getName()));
     }
 
     public void logStatus() {
-        instance.getLogger().info("Status set to: " + jda.getPresence().getStatus());
+        String color = switch (jda.getPresence().getStatus()) {
+            case ONLINE -> "&a&l";
+            case IDLE -> "&e&l";
+            case DO_NOT_DISTURB -> "&c&l";
+            default -> "&7&l";
+        };
+        instance.getServer().getConsoleSender().sendMessage(TextUtil.process("[mGiveaway] Status set to: " + color + jda.getPresence().getStatus()));
     }
 
 

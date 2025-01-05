@@ -1,6 +1,9 @@
 package me.msuro.mGiveaway.classes;
 
+import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.time.LocalDateTime;
@@ -25,6 +28,8 @@ public class Giveaway {
 
     private boolean ended = false;
     private List<String> winners = new ArrayList<>();
+
+    private List<Requirement> requirements = new ArrayList<>();
 
     String embedId = "null";
 
@@ -52,6 +57,7 @@ public class Giveaway {
         }
 
         this.entries = getEntries();
+        this.requirements = getRequirements();
 
         return this;
     }
@@ -181,6 +187,40 @@ public class Giveaway {
         return entries;
     }
 
+    public List<Requirement> getRequirements() {
+        if(requirements == null || requirements.isEmpty())
+            refreshRequirements();
+        return requirements;
+
+    }
+
+    private void refreshRequirements() {
+        List<Requirement> requirements = new ArrayList<>();
+        ConfigurationSection section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PERMISSION.replace("%s", name));
+        if(section != null)
+            for(String key : section.getKeys(false)) {
+                requirements.add(new Requirement(key.replace("-", "."), Requirement.Type.PERMISSION, section.getBoolean(key), -2147483648));
+            }
+        section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_GROUP.replace("%s", name));
+        if(section != null)
+            for(String key : section.getKeys(false)) {
+                requirements.add(new Requirement(key, Requirement.Type.ROLE, section.getBoolean(key), -2147483648));
+            }
+        section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PLACEHOLDER.replace("%s", name));
+        if(section != null)
+            for (String key : section.getKeys(false)) {
+                String value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".over");
+                if(value != null)
+                    requirements.add(new Requirement(key, Requirement.Type.NUMBER, true, Integer.parseInt(value)));
+                value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".under");
+                if(value != null)
+                    requirements.add(new Requirement(key, Requirement.Type.NUMBER, false, Integer.parseInt(value)));
+            }
+        this.requirements = requirements;
+
+
+    }
+
     public String toString() {
         return "Giveaway{" +
                 "name='" + (name != null ? name : "null") + '\'' +
@@ -192,6 +232,7 @@ public class Giveaway {
                 ", entries=" + entries +
                 ", prize='" + prize +
                 ", embedId='" + embedId +
+                ", requirements=" + requirements +
                 "'}";
     }
 
@@ -207,6 +248,20 @@ public class Giveaway {
         return name.equals(giveaway.name) && endTime.equals(giveaway.endTime) && startTime.equals(giveaway.startTime);
     }
 
+    public boolean checkRequirements(String username) {
+        OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayer(username);
+        if(player == null) {
+            throw new IllegalArgumentException("Player not found");
+        }
+        for(Requirement requirement : requirements) {
+            System.out.println("Checking requirement: " + requirement.value());
+            if(!requirement.check(player)) {
+                System.out.println("Requirement not met: " + requirement);
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 }

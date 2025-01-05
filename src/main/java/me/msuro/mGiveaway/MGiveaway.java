@@ -1,10 +1,15 @@
 package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.classes.Giveaway;
+import me.msuro.mGiveaway.classes.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DiscordUtil;
 import net.dv8tion.jda.api.JDA;
+import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -12,6 +17,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public final class MGiveaway extends JavaPlugin {
 
@@ -22,6 +29,8 @@ public final class MGiveaway extends JavaPlugin {
 
     private List<Giveaway> giveaways = new ArrayList<>();
 
+    private Permission perms = null;
+
 
 
     @Override
@@ -29,6 +38,29 @@ public final class MGiveaway extends JavaPlugin {
         instance = this;
         // Plugin startup logic
         getLogger().info("Enabling plugin...");
+
+        getLogger().info("Loading bStats...");
+        new Metrics(this, 24362);
+
+        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            getLogger().severe("PlaceholderAPI not found or not enabled! Disabling plugin...");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        if(Bukkit.getPluginManager().getPlugin("Vault") == null || !Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            getLogger().severe("Vault not found or not enabled! Disabling plugin...");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        getLogger().info("PlaceholderAPI and Vault found and enabled!");
+
+        if (!setupPermissions()) {
+            getLogger().severe("Vault permissions not found or not enabled! Disabling plugin...");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         new ConfigUtil();
 
@@ -77,6 +109,7 @@ public final class MGiveaway extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
+            if(discordUtil == null) return;
             JDA jda = discordUtil.getJDA();
             if (jda == null) return;
             getLogger().info("Shutting down Discord bot...");
@@ -117,5 +150,17 @@ public final class MGiveaway extends JavaPlugin {
 
         return giveaways;
     }
+
+    private boolean setupPermissions() {
+        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        perms = rsp.getProvider();
+        return perms != null;
+    }
+
+    public Permission getPerms() {
+        return perms;
+    }
+
+
 
 }

@@ -1,6 +1,7 @@
 package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.classes.Giveaway;
+import me.msuro.mGiveaway.classes.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DiscordUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -53,6 +54,10 @@ public class DiscordListener extends ListenerAdapter {
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
         if(giveaway.getNickEntries().contains(nick)) {
             event.reply("Ten nick już bierze udział w giveawayu!").setEphemeral(true).queue();
+            return;
+        }
+        if(!giveaway.checkRequirements(nick)) {
+            event.reply("Nie spełniasz wymagań aby wziąć udział w giveawayu!").setEphemeral(true).queue();
             return;
         }
         ConfigUtil.getConfig().set(ConfigUtil.ENTRIES.replace("%s", giveaway.getName() + "." + event.getUser().getId()), nick);

@@ -23,22 +23,7 @@ public class TextUtil {
 
     public static String process(String text) {
         if (text == null || text.isBlank()) return "null";
-        // todo replace prefix, replace placeholders and return
+        text = color(text);
         return text;
     }
-
-    public static String process(String text, boolean prefix) {
-        if (text == null || text.isBlank()) return "null";
-        // todo replace prefix and return
-        return text;
-    }
-
-    public static String process(String text, boolean prefix, String... placeholders) {
-        if (text == null || text.isBlank()) return "null";
-        // todo replace prefix, replace placeholders and return
-        return text;
-    }
-
-
-
 }
