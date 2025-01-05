@@ -1,0 +1,11 @@
+me/msuro/mGiveaway/DiscordListener.class
+me/msuro/mGiveaway/utils/TextUtil.class
+me/msuro/mGiveaway/utils/colors/patterns/Pattern.class
+me/msuro/mGiveaway/utils/colors/patterns/SolidPattern.class
+me/msuro/mGiveaway/classes/Giveaway.class
+me/msuro/mGiveaway/utils/colors/patterns/GradientPattern.class
+me/msuro/mGiveaway/utils/ConfigUtil.class
+me/msuro/mGiveaway/utils/DiscordUtil.class
+me/msuro/mGiveaway/MGiveaway.class
+me/msuro/mGiveaway/utils/colors/patterns/RainbowPattern.class
+me/msuro/mGiveaway/utils/colors/ColorAPI.class
