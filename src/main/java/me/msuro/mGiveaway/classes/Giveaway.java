@@ -2,7 +2,6 @@ package me.msuro.mGiveaway.classes;
 
 import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -10,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +22,7 @@ public class Giveaway {
     private LocalDateTime endTimeFormatted = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
     private String startTime;
     private LocalDateTime startTimeFormatted;
-    private String command = "null";
+    private List<String> commands = new ArrayList<>();
     private Integer winCount = -1;
     private boolean started = false;
 
@@ -34,6 +34,7 @@ public class Giveaway {
     String embedId = "null";
 
     private List<String> entries = new ArrayList<>();
+    private HashMap<String, String> entryMap = new HashMap<>();
 
     public Giveaway() {
     }
@@ -41,13 +42,13 @@ public class Giveaway {
     public Giveaway fromConfig(String giveawayName) {
         this.name = giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
-        this.command = ConfigUtil.getAndValidate(ConfigUtil.COMMAND.replace("%s", giveawayName));
+        this.commands = ConfigUtil.getConfig().getStringList(ConfigUtil.COMMANDS.replace("%s", giveawayName));
         this.winCount = ConfigUtil.getInt(ConfigUtil.WINNERS.replace("%s", giveawayName));
         this.started = ConfigUtil.getConfig().getBoolean(ConfigUtil.STARTED.replace("%s", giveawayName), false);
         this.endTime = ConfigUtil.getAndValidate(ConfigUtil.END_TIME.replace("%s", giveawayName));
         this.startTime = ConfigUtil.getOptional(ConfigUtil.SCH_START.replace("%s", giveawayName));
         this.prize = ConfigUtil.getAndValidate(ConfigUtil.PRIZE_FORMATTED.replace("%s", giveawayName));
-        this.embedId = ConfigUtil.getAndValidate(ConfigUtil.EMBED_ID.replace("%s", giveawayName));
+        this.embedId = ConfigUtil.getOptional(ConfigUtil.EMBED_ID.replace("%s", giveawayName));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         this.endTimeFormatted = LocalDateTime.parse(endTime, formatter);
@@ -90,8 +91,8 @@ public class Giveaway {
         return startTimeFormatted;
     }
 
-    public String getCommand() {
-        return command;
+    public List<String> getCommands() {
+        return commands;
     }
 
     public Integer getWinCount() {
@@ -147,6 +148,9 @@ public class Giveaway {
             return;
         }
         entries = Objects.requireNonNull(ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.ENTRIES.replace("%s", name))).getKeys(false).stream().toList();
+        for (String entry : entries) {
+            entryMap.put(entry, ConfigUtil.getAndValidate(ConfigUtil.ENTRIES.replace("%s", name + "." + entry)));
+        }
     }
 
     /**
@@ -199,26 +203,62 @@ public class Giveaway {
         ConfigurationSection section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PERMISSION.replace("%s", name));
         if(section != null)
             for(String key : section.getKeys(false)) {
-                requirements.add(new Requirement(key.replace("-", "."), Requirement.Type.PERMISSION, section.getBoolean(key), -2147483648));
+                requirements.add(new Requirement(
+                        key.replace("-", "."),
+                        Requirement.Type.PERMISSION,
+                        section.getBoolean(key + ".value"),
+                        -2147483648,
+                        ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
+                                .replace("%s", name)
+                                .replace("%t", "permission")
+                                .replace("%r", key))));
             }
         section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_GROUP.replace("%s", name));
         if(section != null)
             for(String key : section.getKeys(false)) {
-                requirements.add(new Requirement(key, Requirement.Type.ROLE, section.getBoolean(key), -2147483648));
+                requirements.add(new Requirement(
+                        key,
+                        Requirement.Type.ROLE,
+                        section.getBoolean(key + ".value"),
+                        -2147483648,
+                        ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
+                                .replace("%s", name)
+                                .replace("%t", "group")
+                                .replace("%r", key))));
             }
         section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PLACEHOLDER.replace("%s", name));
         if(section != null)
             for (String key : section.getKeys(false)) {
                 String value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".over");
-                if(value != null)
-                    requirements.add(new Requirement(key, Requirement.Type.NUMBER, true, Integer.parseInt(value)));
+                if (value != null)
+                    requirements.add(new Requirement(
+                            key,
+                            Requirement.Type.NUMBER,
+                            true,
+                            Integer.parseInt(value),
+                            ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
+                                    .replace("%s", name)
+                                    .replace("%t", "number")
+                                    .replace("%r", key))));
                 value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".under");
-                if(value != null)
-                    requirements.add(new Requirement(key, Requirement.Type.NUMBER, false, Integer.parseInt(value)));
+                if (value != null)
+                    requirements.add(new Requirement(
+                            key,
+                            Requirement.Type.NUMBER,
+                            false,
+                            Integer.parseInt(value),
+                            ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
+                                    .replace("%s", name)
+                                    .replace("%t", "number")
+                                    .replace("%r", key))));
             }
         this.requirements = requirements;
 
 
+    }
+
+    public HashMap<String, String> getEntryMap() {
+        return entryMap;
     }
 
     public String toString() {
@@ -226,12 +266,12 @@ public class Giveaway {
                 "name='" + (name != null ? name : "null") + '\'' +
                 ", endTime='" + (endTime != null ? endTime : "null") + '\'' +
                 ", startTime='" + (startTime != null ? startTime : "null") + '\'' +
-                ", command='" + (command != null ? command : "null") + '\'' +
+                ", command='" + (commands != null && !commands.isEmpty() ? String.join(", ", commands) : "null") + '\'' +
                 ", winCount=" + winCount +
                 ", started=" + started +
                 ", entries=" + entries +
                 ", prize='" + prize +
-                ", embedId='" + embedId +
+                ", embedId='" + (embedId != null ? embedId : "null") + '\'' +
                 ", requirements=" + requirements +
                 "'}";
     }
@@ -248,20 +288,28 @@ public class Giveaway {
         return name.equals(giveaway.name) && endTime.equals(giveaway.endTime) && startTime.equals(giveaway.startTime);
     }
 
-    public boolean checkRequirements(String username) {
+    /**
+     * Checks if the player meets the requirements for this giveaway.
+     * @param username The player's username.
+     * @return A list of requirements that are not met.
+     */
+    public List<Requirement> checkRequirements(String username) {
         OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayer(username);
         if(player == null) {
             throw new IllegalArgumentException("Player not found");
         }
+        List<Requirement> notMet = new ArrayList<>();
         for(Requirement requirement : requirements) {
-            System.out.println("Checking requirement: " + requirement.value());
             if(!requirement.check(player)) {
-                System.out.println("Requirement not met: " + requirement);
-                return false;
+                notMet.add(requirement);
             }
         }
-        return true;
+        return notMet;
+
     }
 
 
+    public boolean shouldStart() {
+        return !started && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null;
+    }
 }

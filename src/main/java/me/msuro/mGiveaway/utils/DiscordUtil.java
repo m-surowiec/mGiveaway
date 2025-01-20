@@ -131,7 +131,7 @@ public class DiscordUtil {
     }
 
     public String replaceJsonPlaceholders(String json, Giveaway giveaway) {
-        //PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
+        //PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}, {WINNERS}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         json = json.replace("{TIME-LEFT}", "<t:" + giveaway.getEndTimeFormatted().toEpochSecond(ZoneOffset.of("+01:00")) + ":R>");
         json = json.replace("{END-TIME}", giveaway.getEndTime());
@@ -140,7 +140,8 @@ public class DiscordUtil {
         json = json.replace("{PRIZE}", giveaway.getPrize());
         StringBuilder sb = new StringBuilder(" ");
         for (String entry : giveaway.getWinners()) {
-            sb.append("<@").append(entry).append(">, ");
+            sb.append("<@").append(entry).append(">" + ": " + giveaway.getEntryMap().get(entry) + "\n");
+
         }
         if(sb.length() > 2)
             sb.delete(sb.length() - 2, sb.length());
@@ -236,4 +237,5 @@ public class DiscordUtil {
             instance.getLogger().severe("Giveaway channel not found!");
         }
     }
+
 }

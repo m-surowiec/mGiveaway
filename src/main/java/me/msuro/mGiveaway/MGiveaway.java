@@ -1,9 +1,9 @@
 package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.classes.Giveaway;
-import me.msuro.mGiveaway.classes.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DiscordUtil;
+import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.JDA;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
@@ -63,6 +63,7 @@ public final class MGiveaway extends JavaPlugin {
         }
 
         new ConfigUtil();
+        new TextUtil();
 
         discordUtil = new DiscordUtil();
         discordUtil.build();
@@ -81,7 +82,7 @@ public final class MGiveaway extends JavaPlugin {
                 if(!oldGiveaways.contains(giveaway)) {
                     getLogger().info("New giveaway found: " + giveaway.getName());
                 }
-                if(!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) {
+                if((!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) || giveaway.shouldStart()) {
                     getLogger().info("Starting giveaway: " + giveaway.getName());
                     String id = discordUtil.sendGiveawayEmbed(giveaway);
                     giveaway.setEmbedId(id);
@@ -95,15 +96,17 @@ public final class MGiveaway extends JavaPlugin {
                     for (String winner : winners) {
                         ConfigUtil.updateStat(winner, 2);
                         String nick = ConfigUtil.getAndValidate(ConfigUtil.ENTRIES.replace("%s", giveaway.getName() + "." + winner));
-                        BukkitTask syncTask = instance.getServer().getScheduler().runTask(instance, () -> {
-                            instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), giveaway.getCommand().replace("%player%", nick));
+                        instance.getServer().getScheduler().runTask(instance, () -> {
+                            for(String command : giveaway.getCommands()) {
+                                instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", nick));
+                            }
                         });
                     }
                     discordUtil.sendGiveawayEndEmbed(giveaway, winners);
+                    TextUtil.sendGiveawayEmbed(giveaway);
                 }
             }
-            // todo - restore the interval to a minute (20*60)
-        }, 120, 20*10);
+        }, 120, 20*60*10);
     }
 
     @Override
