@@ -32,7 +32,7 @@ public class DiscordCommand extends ListenerAdapter {
                 .addOption(OptionType.BOOLEAN, "requirements", "If the giveaway should wait for you to add requirements", false);
 
         Guild guild = event.getGuild();
-        guild.updateCommands().addCommands(c).queue();
+        guild.upsertCommand(c).queue();
     }
 
 

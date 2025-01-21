@@ -73,7 +73,6 @@ public final class MGiveaway extends JavaPlugin {
 
         updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             ConfigUtil.reloadConfig();
-            getLogger().info("Updating giveaways...");
             List<Giveaway> oldGiveaways = giveaways;
             giveaways = fetchGiveaways();
 
@@ -90,7 +89,7 @@ public final class MGiveaway extends JavaPlugin {
                     ConfigUtil.getConfig().set(ConfigUtil.STARTED.replace("%s", giveaway.getName()), true);
                     ConfigUtil.saveConfig();
                 }
-                if(giveaway.isStarted() && giveaway.getEndTimeFormatted().isBefore(LocalDateTime.now())) {
+                if(!giveaway.hasEnded() && giveaway.isStarted() && giveaway.getEndTimeFormatted().isBefore(LocalDateTime.now())) {
                     getLogger().info("Ending giveaway: " + giveaway.getName());
                     List<String> winners = giveaway.endGiveaway();
                     for (String winner : winners) {
@@ -106,7 +105,7 @@ public final class MGiveaway extends JavaPlugin {
                     TextUtil.sendGiveawayEmbed(giveaway);
                 }
             }
-        }, 120, 20*60*10);
+        }, 120, 20*60);
     }
 
     @Override

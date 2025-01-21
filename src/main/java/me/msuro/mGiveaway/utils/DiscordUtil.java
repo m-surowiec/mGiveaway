@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -140,7 +141,7 @@ public class DiscordUtil {
         json = json.replace("{PRIZE}", giveaway.getPrize());
         StringBuilder sb = new StringBuilder(" ");
         for (String entry : giveaway.getWinners()) {
-            sb.append("<@").append(entry).append(">" + ": " + giveaway.getEntryMap().get(entry) + "\n");
+            sb.append("<@").append(entry).append(">" + ": " + giveaway.getEntryMap().get(entry).replace("_", "\\\\_") + "\\n");
 
         }
         if(sb.length() > 2)
@@ -165,7 +166,7 @@ public class DiscordUtil {
         JSONObject embedObj = messageObj.getJSONObject("embed");
         eb.setTitle(embedObj.has("title") ? embedObj.getString("title") : null, embedObj.has("url") ? embedObj.getString("url") : null);
         eb.setDescription(embedObj.has("description") ? embedObj.getString("description") : null);
-        eb.setColor(embedObj.getInt("color"));
+        eb.setColor(Color.decode(embedObj.getString("color")));
         if (embedObj.has("timestamp")) {
             eb.setTimestamp(OffsetDateTime.parse(embedObj.getString("timestamp")));
         }
@@ -223,7 +224,7 @@ public class DiscordUtil {
 
     public void sendGiveawayEndEmbed(Giveaway giveaway, List<String> winners) {
         EmbedBuilder eb = getEmbedBuilderFromConfig(giveaway, 2);
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(" ");
         for (String winner : winners) {
             sb.append("<@").append(winner).append("> ");
         }

@@ -43,7 +43,7 @@ public class DiscordListener extends ListenerAdapter {
         String duration = event.getOption("duration").getAsString();
         int winners = Math.toIntExact(event.getOption("winners").getAsLong());
         String command = event.getOption("command").getAsString();
-        boolean requirements = event.getOption("requirements").getAsBoolean();
+        boolean requirements = event.getOption("requirements") != null ? event.getOption("requirements").getAsBoolean() : false;
 
         if(!ConfigUtil.createGiveaway(name, prize, duration, winners, command, requirements)) {
             event.reply("Giveaway with this name already exists!").setEphemeral(true).queue();
@@ -59,7 +59,7 @@ public class DiscordListener extends ListenerAdapter {
         if(!event.getComponentId().startsWith("giveaway_")) return;
         Giveaway giveaway = new Giveaway().fromConfig(event.getComponentId().substring(9));
         if(giveaway == null) return;
-        if(giveaway.isEnded()) {
+        if(giveaway.hasEnded()) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten giveaway już się zakończył!")).setEphemeral(true).queue();
             return;
         }

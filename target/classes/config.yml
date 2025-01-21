@@ -10,7 +10,7 @@ discord:
     activity_url: "https://mcgramy.pl"
     giveaway_channel: XXX
     log_embed_channel: XXX
-    log_embed_color: "#8A2BE2"
+    log_embed_color: "#FFFFFF"
     command:
       name: "oneblock_create_giveaway"
       description: "Utwórz giveaway na serwerze OneBlock"
@@ -19,7 +19,7 @@ discord:
       {
         "embed": {
           "title": "GIVEAWAY - ONEBLOCK",
-          "color": 10509236,
+          "color": #FFFFFF,
           "thumbnail": {
             "url": "https://media.discordapp.net/attachments/983273589354676285/1298684317060300850/oneblock.png?ex=67776745&is=677615c5&hm=3a238932a15ddc4d7d413ae55c9ae5157c0ad380c00078d440b08f7546a041bf&=&format=webp&quality=lossless&width=685&height=685"
           },
@@ -51,7 +51,7 @@ discord:
     giveaway_end_embed: |
       { "embed": {
           "title": "KONIEC - ONEBLOCK",
-          "color": 10509236,
+          "color": #FFFFFF,
           "thumbnail": {
               "url": "https://media.discordapp.net/attachments/983273589354676285/1298684317060300850/oneblock.png?ex=67776745&is=677615c5&hm=3a238932a15ddc4d7d413ae55c9ae5157c0ad380c00078d440b08f7546a041bf&=&format=webp&quality=lossless&width=685&height=685"
           },

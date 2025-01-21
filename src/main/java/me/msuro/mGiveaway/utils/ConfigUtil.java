@@ -225,6 +225,7 @@ public class ConfigUtil {
     public static final String PRIZE_FORMATTED = "giveaways.%s.settings.prize_formatted";
     public static final String EMBED_ID = "giveaways.%s.settings.embed_id";
     public static final String FORCE_START = "giveaways.%s.settings.forcestart";
+    public static final String ENDED = "giveaways.%s.ended";
 
     public static final String REQUIREMENT_PERMISSION = "giveaways.%s.requirements.permission";
     public static final String REQUIREMENT_GROUP = "giveaways.%s.requirements.group";

@@ -40,7 +40,7 @@ public class Giveaway {
     }
 
     public Giveaway fromConfig(String giveawayName) {
-        this.name = giveawayName;
+        this.name = giveawayName == null ? "null" : giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
         this.commands = ConfigUtil.getConfig().getStringList(ConfigUtil.COMMANDS.replace("%s", giveawayName));
         this.winCount = ConfigUtil.getInt(ConfigUtil.WINNERS.replace("%s", giveawayName));
@@ -75,9 +75,6 @@ public class Giveaway {
         return endTime;
     }
 
-    public boolean isEnded() {
-        return endTimeFormatted.isBefore(LocalDateTime.now());
-    }
 
     public LocalDateTime getEndTimeFormatted() {
         return endTimeFormatted;
@@ -173,7 +170,8 @@ public class Giveaway {
             winners.add(winner);
         }
         this.winners = winners;
-        this.ended = true;
+        ConfigUtil.getConfig().set(ConfigUtil.ENDED.replace("%s", name), true);
+        ConfigUtil.saveConfig();
         return winners;
     }
 
@@ -285,7 +283,7 @@ public class Giveaway {
             return false;
         }
         Giveaway giveaway = (Giveaway) obj;
-        return name.equals(giveaway.name) && endTime.equals(giveaway.endTime) && startTime.equals(giveaway.startTime);
+        return name.equals(giveaway.name) && endTime.equals(giveaway.endTime) && (startTime == null || startTime.equals(giveaway.startTime));
     }
 
     /**
@@ -311,5 +309,11 @@ public class Giveaway {
 
     public boolean shouldStart() {
         return !started && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null;
+    }
+
+    public boolean hasEnded() {
+        String val = ConfigUtil.getOptional(ConfigUtil.ENDED.replace("%s", name));
+        if(val == null) return false;
+        return Boolean.parseBoolean(val);
     }
 }
