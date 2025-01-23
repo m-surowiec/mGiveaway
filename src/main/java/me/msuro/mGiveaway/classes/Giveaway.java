@@ -5,6 +5,7 @@ import me.msuro.mGiveaway.utils.ConfigUtil;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -39,8 +40,13 @@ public class Giveaway {
     public Giveaway() {
     }
 
+    @Nullable
     public Giveaway fromConfig(String giveawayName) {
-        this.name = giveawayName == null ? "null" : giveawayName;
+        if(giveawayName == null)
+            throw new IllegalArgumentException("Giveaway name cannot be null");
+        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null)
+            return null;
+        this.name = giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
         this.commands = ConfigUtil.getConfig().getStringList(ConfigUtil.COMMANDS.replace("%s", giveawayName));
         this.winCount = ConfigUtil.getInt(ConfigUtil.WINNERS.replace("%s", giveawayName));

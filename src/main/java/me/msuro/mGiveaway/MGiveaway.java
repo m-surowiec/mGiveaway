@@ -110,6 +110,9 @@ public final class MGiveaway extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (updateGiveaways != null && !updateGiveaways.isCancelled()) {
+            updateGiveaways.cancel();
+        }
         try {
             if(discordUtil == null) return;
             JDA jda = discordUtil.getJDA();
@@ -123,10 +126,6 @@ public final class MGiveaway extends JavaPlugin {
             getLogger().info("Discord bot shut down successfully!");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }
-
-        if (updateGiveaways != null && !updateGiveaways.isCancelled()) {
-            updateGiveaways.cancel();
         }
     }
 
