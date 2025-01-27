@@ -26,6 +26,7 @@ public class DiscordCommand extends ListenerAdapter {
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
                 .addOption(OptionType.STRING, "name", "The name of the giveaway", true)
                 .addOption(OptionType.STRING, "prize", "Formatted name of the prize", true)
+                .addOption(OptionType.STRING, "prize_placeholder", "Placeholder for the prize displayed in the in-game messages", true)
                 .addOption(OptionType.STRING, "duration", "The duration of the giveaway (1mo 2w 7d 5m 3s)", true)
                 .addOption(OptionType.INTEGER, "winners", "The number of winners", true)
                 .addOption(OptionType.STRING, "command", "First command to execute (if you want to run multiple commands, add them in config)", true)

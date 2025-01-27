@@ -52,7 +52,8 @@ public record Requirement(String value, Requirement.Type type, boolean hasToBe, 
     public enum Type {
         PERMISSION,
         ROLE,
-        NUMBER
+        NUMBER,
+        NULLPLAYER
     }
 
     public Requirement {

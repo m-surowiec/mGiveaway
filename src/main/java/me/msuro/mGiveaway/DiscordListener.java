@@ -40,14 +40,14 @@ public class DiscordListener extends ListenerAdapter {
         }
         String name = event.getOption("name").getAsString();
         String prize = event.getOption("prize").getAsString();
+        String prizePlaceholder = event.getOption("prize_placeholder").getAsString();
         String duration = event.getOption("duration").getAsString();
         int winners = Math.toIntExact(event.getOption("winners").getAsLong());
         String command = event.getOption("command").getAsString();
         boolean requirements = event.getOption("requirements") != null ? event.getOption("requirements").getAsBoolean() : false;
 
-        if(!ConfigUtil.createGiveaway(name, prize, duration, winners, command, requirements)) {
+        if(!ConfigUtil.createGiveaway(name, prize, prizePlaceholder, duration, winners, command, requirements)) {
             event.reply("Giveaway with this name already exists!").setEphemeral(true).queue();
-            return;
         } else {
             event.reply("Giveaway created successfully!").setEphemeral(true).queue();
         }
@@ -57,7 +57,7 @@ public class DiscordListener extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if(!event.getMessage().getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
         if(!event.getComponentId().startsWith("giveaway_")) return;
-        Giveaway giveaway = new Giveaway().fromConfig(event.getComponentId().substring(9));
+        Giveaway giveaway = instance.getGiveaway(event.getComponentId().substring(9));
         if(giveaway == null) return;
         if(giveaway.hasEnded()) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten giveaway już się zakończył!")).setEphemeral(true).queue();
@@ -67,8 +67,8 @@ public class DiscordListener extends ListenerAdapter {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten giveaway jeszcze się nie zaczął!")).setEphemeral(true).queue();
             return;
         }
-        if(giveaway.getEntries().contains(event.getUser().getId())) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Już bierzesz udział w tym giveawayu jako " + ConfigUtil.getAndValidate(ConfigUtil.ENTRIES.replace("%s", giveaway.getName() + "." + event.getUser().getId())))).setEphemeral(true).queue();
+        if(giveaway.getEntryMap().containsKey(event.getUser().getId())) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Już bierzesz udział w tym giveawayu jako " + giveaway.getEntryMap().get(event.getUser().getId()) + "!")).setEphemeral(true).queue();
             return;
         }
         Modal modal = instance.getDiscordUtil().getJoinForm(giveaway);
@@ -79,15 +79,19 @@ public class DiscordListener extends ListenerAdapter {
     public void onModalInteraction(@NotNull ModalInteractionEvent event) {
         if(!Objects.requireNonNull(event.getMessage()).getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
         if(!event.getModalId().startsWith("join_giveaway_")) return;
-        Giveaway giveaway = new Giveaway().fromConfig(event.getModalId().substring(14));
+        Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(14));
         if(giveaway == null) return;
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
-        if(giveaway.getNickEntries().contains(nick)) {
+        if(giveaway.getEntryMap().containsValue(nick)) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten nick już bierze udział w giveawayu!")).setEphemeral(true).queue();
             return;
         }
         List<Requirement> requirements = giveaway.checkRequirements(nick);
         if(!requirements.isEmpty()) {
+            if(requirements.getFirst().type() == Requirement.Type.NULLPLAYER) {
+                event.replyEmbeds(TextUtil.getReplyEmbed(false, "**Nie wszedłeś nigdy na serwer!**")).setEphemeral(true).queue();
+                return;
+            }
             StringBuilder sb = new StringBuilder();
             int i = 0;
             for(Requirement requirement : requirements) {
@@ -99,10 +103,8 @@ public class DiscordListener extends ListenerAdapter {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "**Nie spełniasz wymagań aby wziąć udział w giveawayu!** \n" + sb)).setEphemeral(true).queue();
             return;
         }
-        ConfigUtil.getConfig().set(ConfigUtil.ENTRIES.replace("%s", giveaway.getName() + "." + event.getUser().getId()), nick);
-        ConfigUtil.saveConfig();
+        giveaway.addEntry(event.getUser().getId(), nick);
         event.replyEmbeds(TextUtil.getReplyEmbed(true, "Zapisano nick! (Nick: " + nick + ")")).setEphemeral(true).queue();
-        giveaway.refreshEntries();
         ConfigUtil.updateStat(event.getUser().getId(), 1);
         MessageEmbed embed = instance.getDiscordUtil().getEmbedBuilderFromConfig(giveaway, 1).build();
         event.getChannel().editMessageEmbedsById(giveaway.getEmbedId(), embed).queue();

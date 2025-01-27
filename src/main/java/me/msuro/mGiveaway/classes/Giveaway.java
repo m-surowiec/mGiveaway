@@ -2,49 +2,54 @@ package me.msuro.mGiveaway.classes;
 
 import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Giveaway {
 
+    private final MGiveaway instance;
+    private final String DEFAULT_VALUE = "null";
+
     // Giveaway settings
-    private String name = "null";
-    private String prize = "null";
-    private String endTime = "null";
-    private LocalDateTime endTimeFormatted = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
-    private String startTime;
-    private LocalDateTime startTimeFormatted;
-    private List<String> commands = new ArrayList<>();
-    private Integer winCount = -1;
-    private boolean started = false;
+    private String          name                = DEFAULT_VALUE;
+    private String          prize               = DEFAULT_VALUE;
+    private String          prizePlaceholder    = DEFAULT_VALUE;
+    private String          endTime             = DEFAULT_VALUE;
+    private LocalDateTime   endTimeFormatted    = null;
+    private String          startTime           = null;
+    private LocalDateTime   startTimeFormatted  = null;
+    private List<String>    commands            = new ArrayList<>();
+    private Integer         winCount            = -1;
+    private boolean         started             = false;
 
     private boolean ended = false;
     private List<String> winners = new ArrayList<>();
 
     private List<Requirement> requirements = new ArrayList<>();
 
-    String embedId = "null";
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-    private List<String> entries = new ArrayList<>();
+    private String embedId = DEFAULT_VALUE;
+
     private HashMap<String, String> entryMap = new HashMap<>();
 
-    public Giveaway() {
+    public Giveaway(MGiveaway instance) {
+        this.instance = instance;
     }
 
     @Nullable
     public Giveaway fromConfig(String giveawayName) {
         if(giveawayName == null)
             throw new IllegalArgumentException("Giveaway name cannot be null");
-        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null)
+        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null || ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName).getKeys(true).isEmpty())
             return null;
         this.name = giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
@@ -54,19 +59,111 @@ public class Giveaway {
         this.endTime = ConfigUtil.getAndValidate(ConfigUtil.END_TIME.replace("%s", giveawayName));
         this.startTime = ConfigUtil.getOptional(ConfigUtil.SCH_START.replace("%s", giveawayName));
         this.prize = ConfigUtil.getAndValidate(ConfigUtil.PRIZE_FORMATTED.replace("%s", giveawayName));
+        this.prizePlaceholder = ConfigUtil.getAndValidate(ConfigUtil.PRIZE_PLACEHOLDER.replace("%s", giveawayName));
         this.embedId = ConfigUtil.getOptional(ConfigUtil.EMBED_ID.replace("%s", giveawayName));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
         this.endTimeFormatted = LocalDateTime.parse(endTime, formatter);
 
         if(startTime != null) {
             this.startTimeFormatted = LocalDateTime.parse(startTime, formatter);
         }
 
-        this.entries = getEntries();
         this.requirements = getRequirements();
 
+        if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || prizePlaceholder == null) {
+            throw new IllegalArgumentException("Giveaway settings cannot be null " + this.toString());
+        }
+        instance.getDBUtil().createGiveawayTable(name);
+        this.entryMap = instance.getDBUtil().refreshEntries(this);
+        instance.addEntry(this, entryMap);
+
         return this;
+    }
+
+    /**
+     * Ends the giveaway and selects the winners.
+     * <p>
+     * This method shuffles the list of entries and selects a subset of entries as winners.
+     * It then updates the giveaway status to ended in the configuration and saves the configuration.
+     *
+     * @return A list of winners.
+     */
+    public List<String> endGiveaway() {
+        List<String> winners = new ArrayList<>();
+        List<String> entries = new ArrayList<>(getEntryMap().keySet());
+        Collections.shuffle(entries);
+        for (int i = 0; i < winCount; i++) {
+            if (i >= entries.size()) {
+                break;
+            }
+            winners.add(entries.get(i));
+        }
+        this.winners = winners;
+        ConfigUtil.getConfig().set(ConfigUtil.ENDED.replace("%s", name), true);
+        ConfigUtil.saveConfig();
+        return winners;
+    }
+
+    /**
+     * Checks if the player meets the requirements for this giveaway.
+     * @param username The player's username.
+     * @return A list of requirements that are not met.
+     */
+    public List<Requirement> checkRequirements(String username) {
+
+        OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayerIfCached(username);
+        if(player == null) {
+            instance.getLogger().severe("Player " + username + " not found! Tried to join giveaway " + name);
+            return List.of(new Requirement[]{new Requirement("Player not found", Requirement.Type.NULLPLAYER, false, -2147483648, "Player not found")});
+        }
+        List<Requirement> notMet = new ArrayList<>();
+        for(Requirement requirement : requirements) {
+            if(!requirement.check(player)) {
+                notMet.add(requirement);
+            }
+        }
+        return notMet;
+
+    }
+
+
+    public boolean shouldStart() {
+        return !started && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null;
+    }
+
+    public boolean hasEnded() {
+        String val = ConfigUtil.getOptional(ConfigUtil.ENDED.replace("%s", name));
+        if(val == null) return false;
+        return Boolean.parseBoolean(val);
+    }
+
+    public String getTimeLeft() {
+        // return endtime-now in "xd yh zm" format
+        LocalDateTime now = LocalDateTime.now();
+        long diff = endTimeFormatted.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
+        if(diff <= 0) {
+            return "0m";
+        }
+        long days = diff / 86400;
+        diff -= days * 86400;
+        long hours = diff / 3600;
+        diff -= hours * 3600;
+        long minutes = diff / 60;
+        return days + "d " + hours + "h " + minutes + "m";
+
+    }
+
+
+    public List<Requirement> getRequirements() {
+        if(requirements == null || requirements.isEmpty())
+            refreshRequirements();
+        return requirements;
+
+    }
+
+    public List<String> getWinners() {
+        return winners;
     }
 
     public String getName() {
@@ -75,6 +172,10 @@ public class Giveaway {
 
     public String getPrize() {
         return prize;
+    }
+
+    public String getPrizePlaceholder() {
+        return prizePlaceholder;
     }
 
     public String getEndTime() {
@@ -102,6 +203,15 @@ public class Giveaway {
         return winCount;
     }
 
+    public String getEmbedId() {
+        return embedId;
+    }
+
+    public HashMap<String, String> getEntryMap() {
+        entryMap = instance.getEntries().get(this);
+        return entryMap;
+    }
+
     public boolean isStarted() {
         return started;
     }
@@ -110,97 +220,12 @@ public class Giveaway {
         this.started = started;
     }
 
-    public String getEmbedId() {
-        return embedId;
-    }
-
     public void setEmbedId(String embedId) {
         this.embedId = embedId;
         ConfigUtil.getConfig().set(ConfigUtil.EMBED_ID.replace("%s", name), embedId);
         ConfigUtil.saveConfig();
     }
 
-    /**
-     * Returns a list of entries for this giveaway.
-     * If the list is empty, it will refresh the entries.
-     * @return A list of entries for this giveaway.
-     */
-    public List<String> getEntries() {
-        if(entries == null || entries.isEmpty())
-            refreshEntries();
-        return entries;
-    }
-
-    /**
-     * Returns a list of nicknames for this giveaway.
-     * @return A list of nicknames for this giveaway.
-     */
-    public List<String> getNickEntries() {
-        List<String> nicks = new ArrayList<>();
-        for(String entry : getEntries()) {
-            String path = (ConfigUtil.ENTRIES + "." + entry).replace("%s", name + ".");
-            nicks.add(ConfigUtil.getAndValidate(path));
-        }
-        return nicks;
-    }
-
-    public void refreshEntries() {
-        ConfigurationSection section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.ENTRIES.replace("%s", name));
-        if (section == null) {
-            entries = List.of();
-            return;
-        }
-        entries = Objects.requireNonNull(ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.ENTRIES.replace("%s", name))).getKeys(false).stream().toList();
-        for (String entry : entries) {
-            entryMap.put(entry, ConfigUtil.getAndValidate(ConfigUtil.ENTRIES.replace("%s", name + "." + entry)));
-        }
-    }
-
-    /**
-     * Ends the giveaway and selects the winners.
-     * @return A list of winners.
-     */
-    public List<String> endGiveaway() {
-        List<String> winners = new ArrayList<>();
-        List<String> entries = new ArrayList<>(getEntries());
-        for(int i = 0; i < winCount; i++) {
-            entries = getRandomEntry(entries);
-            if(entries == null) {
-                break;
-            }
-            String winner = entries.get(0);
-            entries.remove(0);
-            if (winner == null) {
-                break;
-            }
-            winners.add(winner);
-        }
-        this.winners = winners;
-        ConfigUtil.getConfig().set(ConfigUtil.ENDED.replace("%s", name), true);
-        ConfigUtil.saveConfig();
-        return winners;
-    }
-
-    public List<String> getWinners() {
-        return winners;
-    }
-
-    private List<String> getRandomEntry(List<String> entries) {
-        if(entries.isEmpty()) {
-            return null;
-        }
-        String winner = entries.get((int) (Math.random() * entries.size()));
-        entries.remove(winner);
-        entries.addLast(winner);
-        return entries;
-    }
-
-    public List<Requirement> getRequirements() {
-        if(requirements == null || requirements.isEmpty())
-            refreshRequirements();
-        return requirements;
-
-    }
 
     private void refreshRequirements() {
         List<Requirement> requirements = new ArrayList<>();
@@ -257,14 +282,9 @@ public class Giveaway {
                                     .replace("%r", key))));
             }
         this.requirements = requirements;
-
-
     }
 
-    public HashMap<String, String> getEntryMap() {
-        return entryMap;
-    }
-
+    @Override
     public String toString() {
         return "Giveaway{" +
                 "name='" + (name != null ? name : "null") + '\'' +
@@ -273,8 +293,10 @@ public class Giveaway {
                 ", command='" + (commands != null && !commands.isEmpty() ? String.join(", ", commands) : "null") + '\'' +
                 ", winCount=" + winCount +
                 ", started=" + started +
-                ", entries=" + entries +
+                ", entries=" + entryMap +
                 ", prize='" + prize +
+                ", prizePlaceholder='" + prizePlaceholder +
+                ", winners=" + (winners != null && !winners.isEmpty() ? String.join(", ", winners) : "null") + '\'' +
                 ", embedId='" + (embedId != null ? embedId : "null") + '\'' +
                 ", requirements=" + requirements +
                 "'}";
@@ -292,34 +314,17 @@ public class Giveaway {
         return name.equals(giveaway.name) && endTime.equals(giveaway.endTime) && (startTime == null || startTime.equals(giveaway.startTime));
     }
 
-    /**
-     * Checks if the player meets the requirements for this giveaway.
-     * @param username The player's username.
-     * @return A list of requirements that are not met.
-     */
-    public List<Requirement> checkRequirements(String username) {
-        OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayer(username);
-        if(player == null) {
-            throw new IllegalArgumentException("Player not found");
-        }
-        List<Requirement> notMet = new ArrayList<>();
-        for(Requirement requirement : requirements) {
-            if(!requirement.check(player)) {
-                notMet.add(requirement);
-            }
-        }
-        return notMet;
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(name + endTime + startTime);
     }
 
-
-    public boolean shouldStart() {
-        return !started && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null;
+    public void addEntry(String id, String nick) {
+        entryMap.put(id, nick);
+        instance.addEntry(this, new HashMap<>(){{put(id, nick);}});
     }
 
-    public boolean hasEnded() {
-        String val = ConfigUtil.getOptional(ConfigUtil.ENDED.replace("%s", name));
-        if(val == null) return false;
-        return Boolean.parseBoolean(val);
+    public void setEntryMap(HashMap<String, String> entryMap) {
+        this.entryMap = entryMap;
     }
 }

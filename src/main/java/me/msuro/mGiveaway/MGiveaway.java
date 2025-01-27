@@ -2,8 +2,10 @@ package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.classes.Giveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
+import me.msuro.mGiveaway.utils.DBUtils;
 import me.msuro.mGiveaway.utils.DiscordUtil;
 import me.msuro.mGiveaway.utils.TextUtil;
+import me.msuro.mGiveaway.utils.colors.ColorAPI;
 import net.dv8tion.jda.api.JDA;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
@@ -16,6 +18,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -24,14 +27,28 @@ public final class MGiveaway extends JavaPlugin {
 
     private static MGiveaway instance;
     private DiscordUtil discordUtil;
+    private DBUtils dbUtils;
 
     private BukkitTask updateGiveaways;
 
-    private List<Giveaway> giveaways = new ArrayList<>();
+    private final List<Giveaway> giveaways = new ArrayList<>();
 
     private Permission perms = null;
 
+    private static final HashMap<Giveaway, HashMap<String, String>> entries = new HashMap<>();
 
+    public HashMap<Giveaway, HashMap<String, String>> getEntries() {
+        return entries;
+    }
+
+    public void addEntry(Giveaway giveaway, HashMap<String, String> entries) {
+        HashMap<String, String> entry = MGiveaway.entries.get(giveaway);
+        if(entry == null) {
+            entry = new HashMap<>();
+        }
+        entry.putAll(entries);
+        MGiveaway.entries.put(giveaway, entry);
+    }
 
     @Override
     public void onEnable() {
@@ -63,24 +80,33 @@ public final class MGiveaway extends JavaPlugin {
         }
 
         new ConfigUtil();
-        new TextUtil();
+        TextUtil.setInstance(this);
+        TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
 
         discordUtil = new DiscordUtil();
         discordUtil.build();
         new DiscordListener();
 
-        getLogger().info("Plugin enabled!");
+        dbUtils = new DBUtils();
 
+        getLogger().info("Plugin enabled!");
+        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
+        final int[] n = {interval-1};
+        String message = ConfigUtil.getAndValidate(ConfigUtil.BROADCAST_MESSAGE);
         updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            n[0]++;
             ConfigUtil.reloadConfig();
-            List<Giveaway> oldGiveaways = giveaways;
-            giveaways = fetchGiveaways();
+            TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+            List<Giveaway> newGiveaways = fetchGiveaways();
+
+            for(Giveaway giveaway : newGiveaways) {
+                if(!giveaways.contains(giveaway)) {
+                    getLogger().info("New giveaway found: " + giveaway.getName());
+                    giveaways.add(giveaway);
+                }
+             }
 
             for(Giveaway giveaway : giveaways) {
-                //getLogger().info("Checking giveaway: " + giveaway.toString());
-                if(!oldGiveaways.contains(giveaway)) {
-                    getLogger().info("New giveaway found: " + giveaway.getName());
-                }
                 if((!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) || giveaway.shouldStart()) {
                     getLogger().info("Starting giveaway: " + giveaway.getName());
                     String id = discordUtil.sendGiveawayEmbed(giveaway);
@@ -94,7 +120,7 @@ public final class MGiveaway extends JavaPlugin {
                     List<String> winners = giveaway.endGiveaway();
                     for (String winner : winners) {
                         ConfigUtil.updateStat(winner, 2);
-                        String nick = ConfigUtil.getAndValidate(ConfigUtil.ENTRIES.replace("%s", giveaway.getName() + "." + winner));
+                        String nick = giveaway.getEntryMap().get(winner);
                         instance.getServer().getScheduler().runTask(instance, () -> {
                             for(String command : giveaway.getCommands()) {
                                 instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", nick));
@@ -103,6 +129,12 @@ public final class MGiveaway extends JavaPlugin {
                     }
                     discordUtil.sendGiveawayEndEmbed(giveaway, winners);
                     TextUtil.sendGiveawayEmbed(giveaway);
+                } else if(!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
+                    Bukkit.broadcastMessage(TextUtil.process(message
+                            .replace("%winners%", String.valueOf(giveaway.getWinCount()))
+                            .replace("%prize%", giveaway.getPrizePlaceholder())
+                            .replace("%time_left%", giveaway.getTimeLeft())));
+                    n[0] = 0;
                 }
             }
         }, 120, 20*60);
@@ -113,6 +145,11 @@ public final class MGiveaway extends JavaPlugin {
         if (updateGiveaways != null && !updateGiveaways.isCancelled()) {
             updateGiveaways.cancel();
         }
+
+        for(Giveaway giveaway : giveaways) {
+            dbUtils.saveEntries(giveaway);
+        }
+
         try {
             if(discordUtil == null) return;
             JDA jda = discordUtil.getJDA();
@@ -146,7 +183,7 @@ public final class MGiveaway extends JavaPlugin {
         for (String key : section.getKeys(false)) {
             ConfigurationSection giveawaySection = section.getConfigurationSection(key);
             if (giveawaySection == null) continue;
-            giveaways.add(new Giveaway().fromConfig(giveawaySection.getName()));
+            giveaways.add(new Giveaway(instance).fromConfig(giveawaySection.getName()));
         }
 
         return giveaways;
@@ -163,5 +200,22 @@ public final class MGiveaway extends JavaPlugin {
     }
 
 
+    public DBUtils getDBUtil() {
+        return dbUtils;
+    }
 
+    public List<Giveaway> getGiveaways() {
+        return giveaways;
+    }
+
+    public Giveaway getGiveaway(String name) {
+        Giveaway giveaway = giveaways.stream().filter(g -> g.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+        if (giveaway != null) {
+            HashMap<String, String> entry = entries.get(giveaway);
+            if (entry != null) {
+                giveaway.setEntryMap(entry);
+            }
+        }
+        return giveaways.stream().filter(g -> g.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
 }

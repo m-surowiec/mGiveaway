@@ -12,9 +12,10 @@ import java.awt.*;
 public class TextUtil {
 
     private static MGiveaway instance;
+    public static String prefix;
 
-    public TextUtil() {
-        instance = MGiveaway.getInstance();
+    public static void setInstance(MGiveaway instance) {
+        TextUtil.instance = instance;
     }
 
     /**
@@ -29,6 +30,7 @@ public class TextUtil {
 
     public static String process(String text) {
         if (text == null || text.isBlank()) return "null";
+        text = text.replace("%prefix%", prefix);
         text = color(text);
         return text;
     }
@@ -47,17 +49,16 @@ public class TextUtil {
             throw new IllegalStateException("Log channel not found!");
         }
         EmbedBuilder builder = new EmbedBuilder();
-        builder.setColor(Color.getColor(ConfigUtil.getAndValidate(ConfigUtil.LOG_EMBED_COLOR)));
+        builder.setColor(Color.decode(ConfigUtil.getAndValidate(ConfigUtil.LOG_EMBED_COLOR)));
         builder.setTitle("Giveaway zakończony!");
 
-        // I have an ewntryMap (userId, nick) and I want to stream it like this: "<@userId>: nick, <@userId>: nick, ..."
         String entries = giveaway.getEntryMap().entrySet().stream()
-                .map(entry -> "<@" + entry.getKey() + ">: " + entry.getValue())
+                .map(entry -> "<@" + entry.getKey() + ">: " + entry.getValue().replace("_", "\\\\_"))
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("Brak");
 
         builder.setDescription(
-                "Giveaway **" + giveaway.getName() + "** [" + giveaway.getEntries().size() + "]" + "\n" +
+                "Giveaway **" + giveaway.getName() + "** [" + giveaway.getEntryMap().size() + "]" + "\n" +
                         "- **Nagroda:** " + giveaway.getPrize() + " [" + String.join(",", giveaway.getCommands()) + "]\n" +
                         "- **Zwycięzcy:** " + giveaway.getWinners().stream().map(id -> "<@" + id + ">").reduce((a, b) -> a + ", " + b).orElse("Brak") + "\n" +
                         "- **Wejścia:** " + entries + "\n");

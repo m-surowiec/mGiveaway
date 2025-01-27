@@ -114,7 +114,7 @@ public class ConfigUtil {
         saveConfig();
     }
 
-    public static boolean createGiveaway(String name, String prize, String duration, int winners, String command, boolean requirements) {
+    public static boolean createGiveaway(String name, String prize, String prizePlaceholder, String duration, int winners, String command, boolean requirements) {
         if(getOptional("giveaways." + name + ".settings.end_time") != null) return false;
         config.createSection("giveaways." + name);
         long durationInSeconds = parseDuration(duration);
@@ -124,6 +124,8 @@ public class ConfigUtil {
         config.set("giveaways." + name + ".settings.commands", List.of(command));
         config.set("giveaways." + name + ".settings.started", false);
         config.set("giveaways." + name + ".settings.prize_formatted", prize);
+        config.set("giveaways." + name + ".settings.prize_placeholder", prizePlaceholder);
+
         if(!requirements) config.set(ConfigUtil.FORCE_START.replace("%s", name), true);
 
         saveConfig();
@@ -193,6 +195,8 @@ public class ConfigUtil {
 
 
     public static final String PREFIX = "prefix";
+    public static final String BROADCAST_INTERVAL = "broadcast_interval";
+    public static final String BROADCAST_MESSAGE = "broadcast_message";
 
     public static final String TOKEN = "discord.bot.token";
 
@@ -223,6 +227,7 @@ public class ConfigUtil {
     public static final String COMMANDS = "giveaways.%s.settings.commands";
     public static final String STARTED = "giveaways.%s.settings.started";
     public static final String PRIZE_FORMATTED = "giveaways.%s.settings.prize_formatted";
+    public static final String PRIZE_PLACEHOLDER = "giveaways.%s.settings.prize_placeholder";
     public static final String EMBED_ID = "giveaways.%s.settings.embed_id";
     public static final String FORCE_START = "giveaways.%s.settings.forcestart";
     public static final String ENDED = "giveaways.%s.ended";
