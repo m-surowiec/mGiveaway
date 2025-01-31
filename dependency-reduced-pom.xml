@@ -4,7 +4,7 @@
   <groupId>me.msuro</groupId>
   <artifactId>mGiveaway</artifactId>
   <name>mGiveaway</name>
-  <version>0.2</version>
+  <version>0.3</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>
@@ -47,10 +47,6 @@
     </plugins>
   </build>
   <repositories>
-    <repository>
-      <id>maven-central</id>
-      <url>https://repo1.maven.org/maven2/</url>
-    </repository>
     <repository>
       <id>papermc-repo</id>
       <url>https://repo.papermc.io/repository/maven-public/</url>
