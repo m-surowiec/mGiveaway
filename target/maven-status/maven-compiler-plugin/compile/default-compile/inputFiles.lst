@@ -4,6 +4,7 @@
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/classes/Giveaway.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/classes/Requirement.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/ConfigUtil.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/DBUtils.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/DiscordUtil.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/TextUtil.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/colors/ColorAPI.java

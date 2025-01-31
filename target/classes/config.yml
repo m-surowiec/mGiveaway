@@ -1,4 +1,7 @@
-prefix: "CHUJ &8»&r"
+prefix: "&#249D67&lG&#2BAB72&lI&#31B97C&lV&#38C787&lE&#3ED592&lA&#45E39D&lW&#4BF1A7&lA&#52FFB2&lY&f "
+# How often the giveaway message should be broadcasted in seconds (with error margin of 1 minute)
+broadcast_interval: 1800
+broadcast_message: "%prefix% &fNa &#52FFB2Discordzie&f jest giveaway dla %winners% osób na &#52FFB2%prize%&f! Zostało &#52FFB2%time_left%&f. Dołącz do niego na kanale &#52FFB2#giveaway&f! [/dc]"
 
 discord:
   bot:
@@ -79,7 +82,8 @@ discord:
 
 giveaways:
   10KluczyPodniebnych:
-    settings: # Date, when the giveaway should automatically start (not required) [dd/MM/yyyy HH:mm:ss]
+    settings:
+      # Date, when the giveaway should automatically start (not required) [dd/MM/yyyy HH:mm:ss]
       scheduled_start: 31/12/2024 23:59:59
       # Date, when the giveaway should automatically end (required) [dd/MM/yyyy HH:mm:ss]
       end_time: 02/04/2024 23:59:59
@@ -90,6 +94,8 @@ giveaways:
         - "addklucze %player% 1 Podniebna"
       # Prize, which will be displayed in the giveaway message (required)
       prize_formatted: "1x Podniebna"
+      # Placeholder used in the interval broadcast (line 4) (required)
+      prize_placeholder: "klucz podniebny"
     requirements:
       # User must have VIP but not ADMIN role to join the giveaway (not required)
       group:

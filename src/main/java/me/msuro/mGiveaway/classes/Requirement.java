@@ -50,9 +50,15 @@ public record Requirement(String value, Requirement.Type type, boolean hasToBe, 
     }
 
     public enum Type {
+        // Requirement for checking permissions
         PERMISSION,
+        // Requirement for checking roles
         ROLE,
-        NUMBER
+        // Requirement for checking number placeholder values
+        NUMBER,
+        // Requirement for checking if the player is not null (has played before)
+        // It's no actual requirement, but it's used to check if the player is not null
+        NULLPLAYER
     }
 
     public Requirement {
