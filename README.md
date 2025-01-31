@@ -2,7 +2,7 @@
 
 [![bStats: Paper Servers](https://bstats.org/signatures/bukkit/mGiveaway.svg)](https://bstats.org/plugin/24362)
 
-**mGiveaway** is a Minecraft plugin for Spigot, Paper, and Velocity servers that allows you to create and manage giveaways directly from Discord, rewarding your players with in-game prizes.  It uses Discord slash commands for easy giveaway creation and button/modal interactions for user-friendly entry.
+**mGiveaway** is a Minecraft plugin for Paper servers that allows you to create and manage giveaways directly from Discord, rewarding your players with in-game prizes.  It uses Discord slash commands for easy giveaway creation and button/modal interactions for user-friendly entry.
 
 **Key Features:**
 
@@ -20,25 +20,21 @@
 * **Statistics Tracking:** Track player giveaway entries and wins.
 * **SQLite Database:** Stores giveaway entries in a local SQLite database.
 * **PlaceholderAPI and Vault Support:** Extensively utilizes PlaceholderAPI for flexible requirements and Vault for permission/group checks.
-* **Multi-Platform Support:** Designed for Spigot, Paper, and Velocity servers (Paper recommended for best performance).
 
-**Platforms:**
-
-* **Spigot**
-* **Paper** (Recommended)
-* **Velocity** (Basic functionality, may require adjustments - Velocity API compatibility not fully tested in this review)
+**Platform:**
+* **Paper**
 
 **Dependencies:**
 
-* **Paper/Spigot/Velocity Server** (API version '1.17+' recommended)
+* **Paper API 1.20+**
 * **PlaceholderAPI** (Required)
 * **Vault** (Soft-dependency, highly recommended for permission and group requirements)
 * **JDA (Java Discord API)** (Included with the plugin)
 
 **Setup & Installation:**
 
-1. **Download:** Download the latest `mGiveaway.jar` file from [link to your releases/download].
-2. **Install:** Place the `mGiveaway.jar` file into the `plugins` folder of your Paper/Spigot/Velocity server.
+1. **Download:** Download the latest `mGiveaway.jar` file from [https://github.com/m-surowiec/mGiveaway/releases/latest].
+2. **Install:** Place the `mGiveaway.jar` file into the `plugins` folder of your Paper server.
 3. **Restart Server:** Restart your Minecraft server.
 4. **Configure Discord Bot:**
     * **Create a Discord Bot:** If you haven't already, create a Discord bot application at [Discord Developer Portal](https://discord.com/developers/applications).
