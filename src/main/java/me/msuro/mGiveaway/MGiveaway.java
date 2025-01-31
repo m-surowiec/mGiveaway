@@ -215,7 +215,8 @@ public final class MGiveaway extends JavaPlugin {
             if (entry != null) {
                 giveaway.setEntryMap(entry);
             }
+            return giveaway;
         }
-        return giveaways.stream().filter(g -> g.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+        return null;
     }
 }
