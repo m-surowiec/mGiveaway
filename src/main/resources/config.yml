@@ -86,7 +86,7 @@ giveaways:
       # Date, when the giveaway should automatically start (not required) [dd/MM/yyyy HH:mm:ss]
       scheduled_start: 31/12/2024 23:59:59
       # Date, when the giveaway should automatically end (required) [dd/MM/yyyy HH:mm:ss]
-      end_time: 02/04/2024 23:59:59
+      end_time: 02/04/2025 23:59:59
       # Number of winners (required)
       winners: 10
       # Commands, which should be executed when the winner applies for his reward (required) [placeholders: %player% - winner's submitted name]

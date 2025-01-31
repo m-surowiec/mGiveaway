@@ -74,9 +74,13 @@ public class Giveaway {
         if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || prizePlaceholder == null) {
             throw new IllegalArgumentException("Giveaway settings cannot be null " + this.toString());
         }
-        instance.getDBUtil().createGiveawayTable(name);
-        this.entryMap = instance.getDBUtil().refreshEntries(this);
-        instance.addEntry(this, entryMap);
+        try {
+            instance.getDBUtil().createGiveawayTable(name);
+            this.entryMap = instance.getDBUtil().refreshEntries(this);
+            instance.addEntry(this, entryMap);
+        } catch (Exception e) {
+            instance.getLogger().severe("Database operation failed: " + e.getMessage());
+        }
 
         return this;
     }
