@@ -1,6 +1,6 @@
 # mGiveaway - Minecraft Discord Giveaway Plugin
 
-[![bStats: Paper Servers](https://bstats.org/signatures/bukkit/mGiveaway.svg)](https://bstats.org/plugin/24362)
+[![bStats: Paper Servers](https://bstats.org/signatures/bukkit/mGiveaway.svg)](https://bstats.org/plugin/bukkit/mGiveaway/24362)
 
 **mGiveaway** is a Minecraft plugin for Paper servers that allows you to create and manage giveaways directly from Discord, rewarding your players with in-game prizes.  It uses Discord slash commands for easy giveaway creation and button/modal interactions for user-friendly entry.
 
