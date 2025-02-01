@@ -6,8 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -80,6 +80,8 @@ public class Giveaway {
             instance.addEntry(this, entryMap);
         } catch (Exception e) {
             instance.getLogger().severe("Database operation failed: " + e.getMessage());
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
         }
 
         return this;

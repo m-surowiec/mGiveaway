@@ -82,6 +82,8 @@ public class ConfigUtil {
         String value = config.getString(key);
         if (value == null) {
             instance.getLogger().severe("Config value " + key + " not found!");
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
             value = "null";
         } else if (value.equals("XXX")) {
             instance.getLogger().warning("Config value " + key + " not set!");

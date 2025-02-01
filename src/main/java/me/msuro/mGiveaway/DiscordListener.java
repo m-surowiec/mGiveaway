@@ -36,7 +36,11 @@ public class DiscordListener extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if(!event.getName().equalsIgnoreCase(ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME))) return;
         if(!event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-            event.reply("You don't have permission to use this command!").setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "You don't have permission to use this command!")).setEphemeral(true).queue();
+            return;
+        }
+        if(MGiveaway.isPaused()) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
             return;
         }
         String name = event.getOption("name").getAsString();
@@ -48,9 +52,9 @@ public class DiscordListener extends ListenerAdapter {
         boolean requirements = event.getOption("requirements") != null ? event.getOption("requirements").getAsBoolean() : false;
 
         if(!ConfigUtil.createGiveaway(name, prize, prizePlaceholder, duration, winners, command, requirements)) {
-            event.reply("Giveaway with this name already exists!").setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaway with this name already exists!")).setEphemeral(true).queue();
         } else {
-            event.reply("Giveaway created successfully!").setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(true, "Giveaway created successfully!")).setEphemeral(true).queue();
         }
     }
 
@@ -58,6 +62,10 @@ public class DiscordListener extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if(!event.getMessage().getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
         if(!event.getComponentId().startsWith("giveaway_")) return;
+        if(MGiveaway.isPaused()) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
+            return;
+        }
         Giveaway giveaway = instance.getGiveaway(event.getComponentId().substring(9));
         if(giveaway == null) return;
         if(giveaway.hasEnded()) {
@@ -80,6 +88,10 @@ public class DiscordListener extends ListenerAdapter {
     public void onModalInteraction(@NotNull ModalInteractionEvent event) {
         if(!Objects.requireNonNull(event.getMessage()).getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
         if(!event.getModalId().startsWith("join_giveaway_")) return;
+        if(MGiveaway.isPaused()) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
+            return;
+        }
         Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(14));
         if(giveaway == null) return;
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
@@ -89,7 +101,7 @@ public class DiscordListener extends ListenerAdapter {
         }
         List<Requirement> requirements = giveaway.checkRequirements(nick);
         if(!requirements.isEmpty()) {
-            if(requirements.getFirst().type() == Requirement.Type.NULLPLAYER) {
+            if(requirements.get(0).type() == Requirement.Type.NULLPLAYER) {
                 event.replyEmbeds(TextUtil.getReplyEmbed(false, "**Nie wszedłeś nigdy na serwer!**")).setEphemeral(true).queue();
                 return;
             }
