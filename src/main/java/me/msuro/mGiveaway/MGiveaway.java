@@ -6,7 +6,6 @@ import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DBUtils;
 import me.msuro.mGiveaway.utils.DiscordUtil;
 import me.msuro.mGiveaway.utils.TextUtil;
-import me.msuro.mGiveaway.utils.colors.ColorAPI;
 import net.dv8tion.jda.api.JDA;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
@@ -236,8 +235,9 @@ public final class MGiveaway extends JavaPlugin {
 
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        assert rsp != null;
         perms = rsp.getProvider();
-        return perms != null;
+        return true;
     }
 
     public Permission getPerms() {

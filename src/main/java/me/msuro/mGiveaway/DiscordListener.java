@@ -35,7 +35,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if(!event.getName().equalsIgnoreCase(ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME))) return;
-        if(!event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+        if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "You don't have permission to use this command!")).setEphemeral(true).queue();
             return;
         }

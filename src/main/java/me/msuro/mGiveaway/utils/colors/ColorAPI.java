@@ -288,7 +288,7 @@ public class ColorAPI {
         }
 
         String version = Bukkit.getVersion();
-        if (version == null || version.isEmpty()) {
+        if (version.isEmpty()) {
             throw new IllegalArgumentException("Cannot get major Minecraft version from null or empty string");
         }
 

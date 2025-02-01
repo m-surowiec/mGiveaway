@@ -2,9 +2,7 @@ package me.msuro.mGiveaway.classes;
 
 import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +28,6 @@ public class Giveaway {
     private Integer         winCount            = -1;
     private boolean         started             = false;
 
-    private boolean ended = false;
     private List<String> winners = new ArrayList<>();
 
     private List<Requirement> requirements = new ArrayList<>();
@@ -49,7 +46,7 @@ public class Giveaway {
     public Giveaway fromConfig(String giveawayName) {
         if(giveawayName == null)
             throw new IllegalArgumentException("Giveaway name cannot be null");
-        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null || ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName).getKeys(true).isEmpty())
+        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null || Objects.requireNonNull(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName)).getKeys(true).isEmpty())
             return null;
         this.name = giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
@@ -72,7 +69,7 @@ public class Giveaway {
         this.requirements = getRequirements();
 
         if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || prizePlaceholder == null) {
-            throw new IllegalArgumentException("Giveaway settings cannot be null " + this.toString());
+            throw new IllegalArgumentException("Giveaway settings cannot be null " + this);
         }
         try {
             instance.getDBUtil().createGiveawayTable(name);
@@ -333,4 +330,5 @@ public class Giveaway {
     public void setEntryMap(HashMap<String, String> entryMap) {
         this.entryMap = entryMap;
     }
+
 }
