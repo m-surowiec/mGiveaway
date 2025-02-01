@@ -1,7 +1,7 @@
 prefix: "&#249D67&lG&#2BAB72&lI&#31B97C&lV&#38C787&lE&#3ED592&lA&#45E39D&lW&#4BF1A7&lA&#52FFB2&lY&f "
 # How often the giveaway message should be broadcasted in seconds (with error margin of 1 minute)
 broadcast_interval: 1800
-broadcast_message: "%prefix% &fNa &#52FFB2Discordzie&f jest giveaway dla %winners% osób na &#52FFB2%prize%&f! Zostało &#52FFB2%time_left%&f. Dołącz do niego na kanale &#52FFB2#giveaway&f! [/dc]"
+broadcast_message: "%prefix% &fA giveaway is happening on our &#52FFB2Discord&f for %winners% winners to get &#52FFB2%prize%&f! Ends in: &#52FFB2%time_left%&f. Join the &#52FFB2#giveaway&f channel on Discord! [/dc]"
 
 discord:
   bot:
@@ -15,35 +15,35 @@ discord:
     log_embed_channel: XXX
     log_embed_color: "#FFFFFF"
     command:
-      name: "oneblock_create_giveaway"
-      description: "Utwórz giveaway na serwerze OneBlock"
+      name: "create_giveaway"
+      description: "Create a giveaway"
     # PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
     giveaway_embed: |
       {
         "embed": {
-          "title": "GIVEAWAY - ONEBLOCK",
+          "title": "GIVEAWAY",
           "color": #FFFFFF,
           "thumbnail": {
-            "url": "https://media.discordapp.net/attachments/983273589354676285/1298684317060300850/oneblock.png?ex=67776745&is=677615c5&hm=3a238932a15ddc4d7d413ae55c9ae5157c0ad380c00078d440b08f7546a041bf&=&format=webp&quality=lossless&width=685&height=685"
+            "url": "https://media.discordapp.net/attachments/1316681865415098368/1335272964131913768/mGiveaway-logo.png?ex=679f915a&is=679e3fda&hm=a8cfa8ba3c69180ce4bce3cb895e4dfd06fd70ae8a4a38993348a3c45dd1b735&=&format=webp&quality=lossless&width=701&height=686"
           },
           "fields": [
             {
-              "name": ":clock1: **Koniec:**",
+              "name": ":clock1: **Time left:**",
               "value": "{TIME-LEFT}",
               "inline": true
             },
             {
-              "name": ":family_man_boy_boy: **Wejścia:**",
+              "name": ":family_man_boy_boy: **Entries:**",
               "value": "{ENTRIES}",
               "inline": true
             },
             {
-              "name": ":1234: **Wygrani:**",
+              "name": ":1234: **Winners:**",
               "value": "{WIN-COUNT}",
               "inline": true
             },
             {
-              "name": ":trophy: **Nagroda:**",
+              "name": ":trophy: **Prize:**",
               "value": "{PRIZE}",
               "inline": false
             }
@@ -53,24 +53,24 @@ discord:
     # PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
     giveaway_end_embed: |
       { "embed": {
-          "title": "KONIEC - ONEBLOCK",
+          "title": "GIVEAWAY ENDED",
           "color": #FFFFFF,
           "thumbnail": {
-              "url": "https://media.discordapp.net/attachments/983273589354676285/1298684317060300850/oneblock.png?ex=67776745&is=677615c5&hm=3a238932a15ddc4d7d413ae55c9ae5157c0ad380c00078d440b08f7546a041bf&=&format=webp&quality=lossless&width=685&height=685"
+              "url": "https://media.discordapp.net/attachments/1316681865415098368/1335272964131913768/mGiveaway-logo.png?ex=679f915a&is=679e3fda&hm=a8cfa8ba3c69180ce4bce3cb895e4dfd06fd70ae8a4a38993348a3c45dd1b735&=&format=webp&quality=lossless&width=701&height=686"
           },
           "fields": [
               {
-                  "name": ":family_man_boy_boy: **Wejścia:**",
+                  "name": ":family_man_boy_boy: **Entries:**",
                   "value": "{ENTRIES}",
                   "inline": true
               },
               {
-                  "name": ":trophy: **Nagroda:**",
+                  "name": ":trophy: **Prize:**",
                   "value": "{PRIZE}",
                   "inline": true
               },
               {
-                  "name": ":1234: **Wygrani:**",
+                  "name": ":1234: **Winners:**",
                   "value": "{WINNERS}",
                   "inline": false
               }
@@ -81,7 +81,7 @@ discord:
 
 
 giveaways:
-  10KluczyPodniebnych:
+  5Diamonds:
     settings:
       # Date, when the giveaway should automatically start (not required) [dd/MM/yyyy HH:mm:ss]
       scheduled_start: 31/12/2024 23:59:59
@@ -91,21 +91,21 @@ giveaways:
       winners: 10
       # Commands, which should be executed when the winner applies for his reward (required) [placeholders: %player% - winner's submitted name]
       commands:
-        - "addklucze %player% 1 Podniebna"
+        - "give %player% diamond 5"
       # Prize, which will be displayed in the giveaway message (required)
-      prize_formatted: "1x Podniebna"
+      prize_formatted: "5x Diamond"
       # Placeholder used in the interval broadcast (line 4) (required)
-      prize_placeholder: "klucz podniebny"
+      prize_placeholder: "5 diamonds"
     requirements:
       # User must have VIP but not ADMIN role to join the giveaway (not required)
       group:
         VIP:
           value: true
           # Formatted value of the group, which will be displayed in the giveaway message (not required)
-          formatted: "Ranga VIP"
+          formatted: "VIP rank"
         ADMIN:
           value: false
-          formatted: "Brak rangi ADMIN"
+          formatted: "no ADMIN rank"
       # Placeholder value of `chatgames_points` must be between 50 and 100 to join the giveaway (not required)
       placeholder:
         chatgames_points:
@@ -115,9 +115,5 @@ giveaways:
       permission:
         op: false
         mcgramy-giveaway: true
-
-
-
-entered:
 
 stats:

@@ -12,6 +12,8 @@ me/msuro/mGiveaway/utils/ConfigUtil.class
 me/msuro/mGiveaway/utils/DiscordUtil.class
 me/msuro/mGiveaway/classes/Requirement$Type.class
 me/msuro/mGiveaway/MGiveaway.class
+me/msuro/mGiveaway/commands/Reload.class
 me/msuro/mGiveaway/utils/colors/patterns/RainbowPattern.class
 me/msuro/mGiveaway/utils/colors/ColorAPI.class
 me/msuro/mGiveaway/utils/DBUtils.class
+me/msuro/mGiveaway/classes/Requirement$1.class

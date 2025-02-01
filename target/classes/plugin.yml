@@ -1,8 +1,14 @@
 name: mGiveaway
 version: '0.3.1'
 main: me.msuro.mGiveaway.MGiveaway
-api-version: '1.20'
+api-version: '1.13'
 authors: [ mSuro_ ]
 softdepend:
   - PlaceholderAPI
   - Vault
+
+commands:
+  mgwreload:
+    description: Reloads the plugin
+    usage: /mgwreload
+    permission: mgiveaway.reload

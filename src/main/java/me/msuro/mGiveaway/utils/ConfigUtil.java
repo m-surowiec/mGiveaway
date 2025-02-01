@@ -4,9 +4,7 @@ import me.msuro.mGiveaway.MGiveaway;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -51,9 +49,9 @@ public class ConfigUtil {
         try {
             config.save(new File(instance.getDataFolder(), "config.yml"));
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to save config file!", e);
         }
-        this.config = config;
+        ConfigUtil.config = config;
         instance.reloadConfig();
     }
 
@@ -82,6 +80,8 @@ public class ConfigUtil {
         String value = config.getString(key);
         if (value == null) {
             instance.getLogger().severe("Config value " + key + " not found!");
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
             value = "null";
         } else if (value.equals("XXX")) {
             instance.getLogger().warning("Config value " + key + " not set!");

@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
@@ -25,12 +24,13 @@ import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 public class DiscordUtil {
 
-    private MGiveaway instance;
+    private final MGiveaway instance;
 
     private JDA jda;
 
@@ -40,15 +40,6 @@ public class DiscordUtil {
 
     public JDA getJDA() {
         return jda;
-    }
-
-    public void shutdown() {
-        jda.shutdown();
-    }
-
-    public void restart() {
-        jda.shutdown();
-        build();
     }
 
     public void build() {
@@ -99,7 +90,7 @@ public class DiscordUtil {
     }
 
     public void logActivity() {
-        instance.getServer().getConsoleSender().sendMessage(TextUtil.process("[mGiveaway] Activity set to: &7" + jda.getPresence().getActivity().getName()));
+        instance.getServer().getConsoleSender().sendMessage(TextUtil.process("[mGiveaway] Activity set to: &7" + Objects.requireNonNull(jda.getPresence().getActivity()).getName()));
     }
 
     public void logStatus() {
@@ -140,8 +131,13 @@ public class DiscordUtil {
         json = json.replace("{WIN-COUNT}", giveaway.getWinCount().toString());
         json = json.replace("{PRIZE}", giveaway.getPrize());
         StringBuilder sb = new StringBuilder(" ");
+        HashMap<String, String> entries = giveaway.getEntryMap();
         for (String entry : giveaway.getWinners()) {
-            sb.append("<@").append(entry).append(">" + ": " + giveaway.getEntryMap().get(entry).replace("_", "\\\\_") + "\\n");
+            sb.append("<@")
+                    .append(entry)
+                    .append(">" + ": ")
+                    .append(entries.get(entry).replace("_", "\\\\_"))
+                    .append("\\n");
 
         }
         if(sb.length() > 2) {

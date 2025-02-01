@@ -4,20 +4,16 @@ import me.msuro.mGiveaway.utils.ConfigUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import org.bukkit.command.Command;
 
 public class DiscordCommand extends ListenerAdapter {
 
-    private final MGiveaway instance;
-
     public DiscordCommand(GuildReadyEvent event) {
-        this.instance = MGiveaway.getInstance();
+        MGiveaway instance = MGiveaway.getInstance();
         instance.getDiscordUtil().getJDA().addEventListener(this);
         String commandName = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME);
         String commandDesc = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_DESCRIPTION);

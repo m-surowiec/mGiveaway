@@ -26,11 +26,16 @@ package me.msuro.mGiveaway.utils;
                     Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
                     Statement statement = connection.createStatement();
                     if(statement == null || statement.isClosed()) {
+                        MGiveaway.setPaused(true);
+                        instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                         throw new RuntimeException("Failed to create database file!");
                     }
 
                 } catch (SQLException e) {
+                    MGiveaway.setPaused(true);
+                    instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                     throw new RuntimeException("Failed to load database file!", e);
+
                 }
 
             }
@@ -39,42 +44,40 @@ package me.msuro.mGiveaway.utils;
                 try {
                     return DriverManager.getConnection("jdbc:sqlite:" + dbFile);
                 } catch (SQLException e) {
+                    MGiveaway.setPaused(true);
+                    instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                     throw new RuntimeException("Failed to get connection to database!", e);
                 }
             }
 
             public void createGiveawayTable(String giveawayName) {
-                try {
-                    Connection conn = getConnection();
-                    Statement statement = conn.createStatement();
+                try (Connection conn = getConnection();
+                    Statement statement = conn.createStatement()) {
                     statement.execute("CREATE TABLE IF NOT EXISTS `entries-" + giveawayName + "` (" +
                             "`discord_id` varchar(255) NOT NULL," +
                             "`minecraft_name` varchar(255) NOT NULL," +
                             "PRIMARY KEY (`discord_id`, `minecraft_name`));");
 
-                    statement.close();
-                    conn.close();
 
                 } catch (SQLException e) {
+                    MGiveaway.setPaused(true);
+                    instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                     throw new RuntimeException("Failed to create giveaway table!", e);
                 }
             }
 
             public HashMap<String, String> refreshEntries(Giveaway giveaway) {
                 HashMap<String, String> entries = new HashMap<>();
-                try (Connection conn = getConnection()) {
-
-                    Statement statement = conn.createStatement();
+                try (Connection conn = getConnection(); Statement statement = conn.createStatement()) {
                     statement.execute("SELECT * FROM `entries-" + giveaway.getName() + "`;");
                     ResultSet resultSet = statement.getResultSet();
                     while (resultSet.next()) {
                         entries.put(resultSet.getString("discord_id"), resultSet.getString("minecraft_name"));
                     }
 
-                    statement.close();
-                    conn.close();
-
                 } catch (SQLException e) {
+                    MGiveaway.setPaused(true);
+                    instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                     throw new RuntimeException("Failed to refresh entries (giveaway: " + giveaway.getName() + ")!", e);
                 }
                 return entries;
@@ -83,9 +86,8 @@ package me.msuro.mGiveaway.utils;
             public void saveEntries(Giveaway giveaway) {
                 HashMap<String, String> entries = instance.getEntries().get(giveaway);
                 if(entries == null || entries.isEmpty()) return;
-                try {
+                try (Connection conn = getConnection()) {
                     instance.getLogger().info("Saving entries for giveaway: " + giveaway.getName() + " (" + entries.size() + ")");
-                    Connection conn = getConnection();
                     String sql = "INSERT OR REPLACE INTO `entries-" + giveaway.getName() + "` (discord_id, minecraft_name) VALUES (?, ?)";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     for (Map.Entry<String, String> entry : entries.entrySet()) {
@@ -95,9 +97,10 @@ package me.msuro.mGiveaway.utils;
                     }
                     pstmt.executeBatch();
                     pstmt.close();
-                    conn.close();
 
                 } catch (SQLException e) {
+                    MGiveaway.setPaused(true);
+                    instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
                     throw new RuntimeException("Failed to save entries (giveaway: " + giveaway.getName() + ")!", e);
                 }
             }

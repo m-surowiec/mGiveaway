@@ -6,10 +6,9 @@ import me.msuro.mGiveaway.utils.colors.patterns.Pattern;
 import me.msuro.mGiveaway.utils.colors.patterns.RainbowPattern;
 import me.msuro.mGiveaway.utils.colors.patterns.SolidPattern;
 import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
@@ -74,8 +73,8 @@ public class ColorAPI {
      * @param string The string we want to process
      * @since 1.0.0
      */
-    @Nonnull
-    public static String process(@Nonnull String string) {
+    @NotNull
+    public static String process(@NotNull String string) {
         for (Pattern pattern : PATTERNS) {
             string = pattern.process(string);
         }
@@ -90,8 +89,8 @@ public class ColorAPI {
      * @return The list of processed strings
      * @since 1.0.3
      */
-    @Nonnull
-    public static List<String> process(@Nonnull Collection<String> strings) {
+    @NotNull
+    public static List<String> process(@NotNull Collection<String> strings) {
         return strings.stream()
                 .map(ColorAPI::process)
                 .collect(Collectors.toList());
@@ -104,8 +103,8 @@ public class ColorAPI {
      * @param color  The color we want to set it to
      * @since 1.0.0
      */
-    @Nonnull
-    public static String color(@Nonnull String string, @Nonnull Color color) {
+    @NotNull
+    public static String color(@NotNull String string, @NotNull Color color) {
         return (SUPPORTS_RGB ? ChatColor.of(color) : getClosestColor(color)) + string;
     }
 
@@ -117,8 +116,8 @@ public class ColorAPI {
      * @param end    The ending gradiant
      * @since 1.0.0
      */
-    @Nonnull
-    public static String color(@Nonnull String string, @Nonnull Color start, @Nonnull Color end) {
+    @NotNull
+    public static String color(@NotNull String string, @NotNull Color start, @NotNull Color end) {
         ChatColor[] colors = createGradient(start, end, withoutSpecialChar(string).length());
         return apply(string, colors);
     }
@@ -130,8 +129,8 @@ public class ColorAPI {
      * @param saturation The saturation of the rainbow colors
      * @since 1.0.3
      */
-    @Nonnull
-    public static String rainbow(@Nonnull String string, float saturation) {
+    @NotNull
+    public static String rainbow(@NotNull String string, float saturation) {
         ChatColor[] colors = createRainbow(withoutSpecialChar(string).length(), saturation);
         return apply(string, colors);
     }
@@ -142,8 +141,8 @@ public class ColorAPI {
      * @param string The hex code of the color
      * @since 1.0.0
      */
-    @Nonnull
-    public static ChatColor getColor(@Nonnull String string) {
+    @NotNull
+    public static ChatColor getColor(@NotNull String string) {
         return SUPPORTS_RGB ? ChatColor.of(new Color(Integer.parseInt(string, 16)))
                 : getClosestColor(new Color(Integer.parseInt(string, 16)));
     }
@@ -156,13 +155,13 @@ public class ColorAPI {
      * @return The stripped string without color codes
      * @since 1.0.5
      */
-    @Nonnull
-    public static String stripColorFormatting(@Nonnull String string) {
+    @NotNull
+    public static String stripColorFormatting(@NotNull String string) {
         return string.replaceAll("<#[0-9A-F]{6}>|[&§][a-f0-9lnokm]|</?[A-Z]{5,8}(:[0-9A-F]{6})?[0-9]*>", "");
     }
 
-    @Nonnull
-    private static String apply(@Nonnull String source, ChatColor[] colors) {
+    @NotNull
+    private static String apply(@NotNull String source, ChatColor[] colors) {
         StringBuilder specialColors = new StringBuilder();
         StringBuilder stringBuilder = new StringBuilder();
         int outIndex = 0;
@@ -185,8 +184,8 @@ public class ColorAPI {
         return stringBuilder.toString();
     }
 
-    @Nonnull
-    private static String withoutSpecialChar(@Nonnull String source) {
+    @NotNull
+    private static String withoutSpecialChar(@NotNull String source) {
         String workingString = source;
         for (String color : SPECIAL_COLORS) {
             if (workingString.contains(color)) {
@@ -204,7 +203,7 @@ public class ColorAPI {
      * @return The array of colors
      * @since 1.0.3
      */
-    @Nonnull
+    @NotNull
     private static ChatColor[] createRainbow(int step, float saturation) {
         ChatColor[] colors = new ChatColor[step];
         double colorStep = (1.00 / step);
@@ -230,8 +229,8 @@ public class ColorAPI {
      * @author TheViperShow
      * @since 1.0.0
      */
-    @Nonnull
-    private static ChatColor[] createGradient(@Nonnull Color start, @Nonnull Color end, int step) {
+    @NotNull
+    private static ChatColor[] createGradient(@NotNull Color start, @NotNull Color end, int step) {
         step = Math.max(step,2);
         ChatColor[] colors = new ChatColor[step];
         int stepR = Math.abs(start.getRed() - end.getRed()) / (step - 1);
@@ -261,7 +260,7 @@ public class ColorAPI {
      * @param color The color we want to transform
      * @since 1.0.0
      */
-    @Nonnull
+    @NotNull
     private static ChatColor getClosestColor(Color color) {
         Color nearestColor = null;
         double nearestDistance = Integer.MAX_VALUE;
@@ -289,7 +288,9 @@ public class ColorAPI {
         }
 
         String version = Bukkit.getVersion();
-        Validate.notEmpty(version, "Cannot get major Minecraft version from null or empty string");
+        if (version.isEmpty()) {
+            throw new IllegalArgumentException("Cannot get major Minecraft version from null or empty string");
+        }
 
         // getVersion()
         int index = version.lastIndexOf("MC:");

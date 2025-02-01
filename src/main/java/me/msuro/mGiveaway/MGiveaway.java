@@ -1,11 +1,11 @@
 package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.classes.Giveaway;
+import me.msuro.mGiveaway.commands.Reload;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DBUtils;
 import me.msuro.mGiveaway.utils.DiscordUtil;
 import me.msuro.mGiveaway.utils.TextUtil;
-import me.msuro.mGiveaway.utils.colors.ColorAPI;
 import net.dv8tion.jda.api.JDA;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
@@ -28,6 +28,9 @@ public final class MGiveaway extends JavaPlugin {
     private static MGiveaway instance;
     private DiscordUtil discordUtil;
     private DBUtils dbUtils;
+    private static boolean pausePlugin = false;
+
+    Metrics metrics;
 
     private BukkitTask updateGiveaways;
 
@@ -56,8 +59,45 @@ public final class MGiveaway extends JavaPlugin {
         // Plugin startup logic
         getLogger().info("Enabling plugin...");
 
+        // Check Java Version (Minimum Java 17)
+        String javaVersion = System.getProperty("java.version");
+        String[] versionParts = javaVersion.split("\\.");
+        int majorVersion;
+        try {
+            majorVersion = Integer.parseInt(versionParts[0]);
+            if (majorVersion < 17) {
+                getLogger().severe("--------------------------------------------------");
+                getLogger().severe("mGiveaway Plugin Error: Incompatible Java Version");
+                getLogger().severe("Your server is running Java " + javaVersion + ". ");
+                getLogger().severe("mGiveaway requires Java 17 or higher to run.");
+                getLogger().severe("Please update your server's Java version to 17 or later.");
+                getLogger().severe("Disabling mGiveaway plugin.");
+                getLogger().severe("--------------------------------------------------");
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            getLogger().warning("Could not parse Java version string: " + javaVersion + ". Java version check may be inaccurate.");
+        }
+
+
+        try {
+            Class.forName("com.destroystokyo.paper.PaperConfig");
+        } catch (ClassNotFoundException e) {
+            getLogger().severe("--------------------------------------------------");
+            getLogger().severe("mGiveaway Plugin Error: Paper Server Required");
+            getLogger().severe("mGiveaway is designed for Paper servers (1.17+).");
+            getLogger().severe("It appears your server is NOT running Paper.");
+            getLogger().severe("Please use a Paper server version 1.17 or higher.");
+            getLogger().severe("Functionality is NOT guaranteed on Spigot or Bukkit.");
+            getLogger().severe("Disabling mGiveaway plugin.");
+            getLogger().severe("--------------------------------------------------");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return; // Stop plugin loading
+        }
+
         getLogger().info("Loading bStats...");
-        new Metrics(this, 24362);
+        metrics = new Metrics(this, 24362);
 
         if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().severe("PlaceholderAPI not found or not enabled! Disabling plugin...");
@@ -89,52 +129,56 @@ public final class MGiveaway extends JavaPlugin {
 
         dbUtils = new DBUtils();
 
+        new Reload();
+
         getLogger().info("Plugin enabled!");
         int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
         final int[] n = {interval-1};
         String message = ConfigUtil.getAndValidate(ConfigUtil.BROADCAST_MESSAGE);
         updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
-            n[0]++;
-            ConfigUtil.reloadConfig();
-            TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
-            List<Giveaway> newGiveaways = fetchGiveaways();
+            if(!isPaused()) {
+                n[0]++;
+                ConfigUtil.reloadConfig();
+                TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+                List<Giveaway> newGiveaways = fetchGiveaways();
 
-            for(Giveaway giveaway : newGiveaways) {
-                if(!giveaways.contains(giveaway)) {
-                    getLogger().info("New giveaway found: " + giveaway.getName());
-                    giveaways.add(giveaway);
-                }
-             }
-
-            for(Giveaway giveaway : giveaways) {
-                if((!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) || giveaway.shouldStart()) {
-                    getLogger().info("Starting giveaway: " + giveaway.getName());
-                    String id = discordUtil.sendGiveawayEmbed(giveaway);
-                    giveaway.setEmbedId(id);
-                    giveaway.setStarted(true);
-                    ConfigUtil.getConfig().set(ConfigUtil.STARTED.replace("%s", giveaway.getName()), true);
-                    ConfigUtil.saveConfig();
-                }
-                if(!giveaway.hasEnded() && giveaway.isStarted() && giveaway.getEndTimeFormatted().isBefore(LocalDateTime.now())) {
-                    getLogger().info("Ending giveaway: " + giveaway.getName());
-                    List<String> winners = giveaway.endGiveaway();
-                    for (String winner : winners) {
-                        ConfigUtil.updateStat(winner, 2);
-                        String nick = giveaway.getEntryMap().get(winner);
-                        instance.getServer().getScheduler().runTask(instance, () -> {
-                            for(String command : giveaway.getCommands()) {
-                                instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", nick));
-                            }
-                        });
+                for (Giveaway giveaway : newGiveaways) {
+                    if (!giveaways.contains(giveaway)) {
+                        getLogger().info("New giveaway found: " + giveaway.getName());
+                        giveaways.add(giveaway);
                     }
-                    discordUtil.sendGiveawayEndEmbed(giveaway, winners);
-                    TextUtil.sendGiveawayEmbed(giveaway);
-                } else if(!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
-                    Bukkit.broadcastMessage(TextUtil.process(message
-                            .replace("%winners%", String.valueOf(giveaway.getWinCount()))
-                            .replace("%prize%", giveaway.getPrizePlaceholder())
-                            .replace("%time_left%", giveaway.getTimeLeft())));
-                    n[0] = 0;
+                }
+
+                for (Giveaway giveaway : giveaways) {
+                    if ((!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) || giveaway.shouldStart()) {
+                        getLogger().info("Starting giveaway: " + giveaway.getName());
+                        String id = discordUtil.sendGiveawayEmbed(giveaway);
+                        giveaway.setEmbedId(id);
+                        giveaway.setStarted(true);
+                        ConfigUtil.getConfig().set(ConfigUtil.STARTED.replace("%s", giveaway.getName()), true);
+                        ConfigUtil.saveConfig();
+                    }
+                    if (!giveaway.hasEnded() && giveaway.isStarted() && giveaway.getEndTimeFormatted().isBefore(LocalDateTime.now())) {
+                        getLogger().info("Ending giveaway: " + giveaway.getName());
+                        List<String> winners = giveaway.endGiveaway();
+                        for (String winner : winners) {
+                            ConfigUtil.updateStat(winner, 2);
+                            String nick = giveaway.getEntryMap().get(winner);
+                            instance.getServer().getScheduler().runTask(instance, () -> {
+                                for (String command : giveaway.getCommands()) {
+                                    instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", nick));
+                                }
+                            });
+                        }
+                        discordUtil.sendGiveawayEndEmbed(giveaway, winners);
+                        TextUtil.sendGiveawayEmbed(giveaway);
+                    } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
+                        Bukkit.broadcastMessage(TextUtil.process(message
+                                .replace("%winners%", String.valueOf(giveaway.getWinCount()))
+                                .replace("%prize%", giveaway.getPrizePlaceholder())
+                                .replace("%time_left%", giveaway.getTimeLeft())));
+                        n[0] = 0;
+                    }
                 }
             }
         }, 120, 20*60);
@@ -191,8 +235,9 @@ public final class MGiveaway extends JavaPlugin {
 
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+        assert rsp != null;
         perms = rsp.getProvider();
-        return perms != null;
+        return true;
     }
 
     public Permission getPerms() {
@@ -218,5 +263,105 @@ public final class MGiveaway extends JavaPlugin {
             return giveaway;
         }
         return null;
+    }
+
+    public static boolean isPaused() {
+        return pausePlugin;
+    }
+
+    public static void setPaused(boolean paused) {
+        pausePlugin = paused;
+    }
+
+    /**
+     * Completely reloads the plugin.
+     * This method is called when the plugin is reloaded.
+     * It should be used to reload all the plugin's data.
+     *
+     */
+    public void reloadPlugin() {
+        onDisable();
+
+        setPaused(false);
+
+        getLogger().info("Reloading plugin...");
+
+        getLogger().info("Resetting bStats...");
+        metrics.shutdown();
+        metrics = new Metrics(this, 24362);
+
+        getLogger().info("Reloading config...");
+        new ConfigUtil();
+        TextUtil.setInstance(this);
+        TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+
+        getLogger().info("Reloading Discord bot...");
+        if(discordUtil != null && discordUtil.getJDA() != null && discordUtil.getJDA().getStatus() == JDA.Status.CONNECTED) {
+            discordUtil.getJDA().shutdown();
+        }
+        discordUtil = new DiscordUtil();
+        discordUtil.build();
+        new DiscordListener();
+
+        dbUtils = new DBUtils();
+
+        getLogger().info("Starting giveaway update task...");
+        if (updateGiveaways != null && !updateGiveaways.isCancelled()) {
+            updateGiveaways.cancel();
+            updateGiveaways = null;
+        }
+        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
+        final int[] n = {interval-1};
+        String message = ConfigUtil.getAndValidate(ConfigUtil.BROADCAST_MESSAGE);
+        updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if(!isPaused()) {
+                n[0]++;
+                ConfigUtil.reloadConfig();
+                TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+                List<Giveaway> newGiveaways = fetchGiveaways();
+
+                for (Giveaway giveaway : newGiveaways) {
+                    if (!giveaways.contains(giveaway)) {
+                        getLogger().info("New giveaway found: " + giveaway.getName());
+                        giveaways.add(giveaway);
+                    }
+                }
+
+                for (Giveaway giveaway : giveaways) {
+                    if ((!giveaway.isStarted() && giveaway.getStartTime() != null && giveaway.getStartTimeFormatted().isBefore(LocalDateTime.now())) || giveaway.shouldStart()) {
+                        getLogger().info("Starting giveaway: " + giveaway.getName());
+                        String id = discordUtil.sendGiveawayEmbed(giveaway);
+                        giveaway.setEmbedId(id);
+                        giveaway.setStarted(true);
+                        ConfigUtil.getConfig().set(ConfigUtil.STARTED.replace("%s", giveaway.getName()), true);
+                        ConfigUtil.saveConfig();
+                    }
+                    if (!giveaway.hasEnded() && giveaway.isStarted() && giveaway.getEndTimeFormatted().isBefore(LocalDateTime.now())) {
+                        getLogger().info("Ending giveaway: " + giveaway.getName());
+                        List<String> winners = giveaway.endGiveaway();
+                        for (String winner : winners) {
+                            ConfigUtil.updateStat(winner, 2);
+                            String nick = giveaway.getEntryMap().get(winner);
+                            instance.getServer().getScheduler().runTask(instance, () -> {
+                                for (String command : giveaway.getCommands()) {
+                                    instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", nick));
+                                }
+                            });
+                        }
+                        discordUtil.sendGiveawayEndEmbed(giveaway, winners);
+                        TextUtil.sendGiveawayEmbed(giveaway);
+                    } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
+                        Bukkit.broadcastMessage(TextUtil.process(message
+                                .replace("%winners%", String.valueOf(giveaway.getWinCount()))
+                                .replace("%prize%", giveaway.getPrizePlaceholder())
+                                .replace("%time_left%", giveaway.getTimeLeft())));
+                        n[0] = 0;
+                    }
+                }
+            }
+        }, 120, 20*60);
+
+
+        getLogger().info("Reloading plugin complete!");
     }
 }
