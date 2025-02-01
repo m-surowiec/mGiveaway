@@ -22,13 +22,13 @@ public class Reload implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(!command.getName().equalsIgnoreCase("mgwreload")) return true;
         if(!sender.hasPermission("mgiveaway.reload")) {
-            sender.sendMessage(TextUtil.process("{PREFIX} &cYou don't have permission to use this command!"));
+            sender.sendMessage(TextUtil.process("%prefix% &cYou don't have permission to use this command!"));
             return true;
         }
         long now = System.currentTimeMillis();
-        sender.sendMessage(TextUtil.process("{PREFIX} &7Reloading plugin..."));
+        sender.sendMessage(TextUtil.process("%prefix% &7Reloading plugin..."));
         instance.reloadPlugin();
-        sender.sendMessage(TextUtil.process("{PREFIX} &7Plugin reloaded! " + "&8(&f" + (System.currentTimeMillis() - now) + "ms&8)"));
+        sender.sendMessage(TextUtil.process("%prefix% &7Plugin reloaded! " + "&8(&a" + (System.currentTimeMillis() - now) + "ms&8)"));
 
         return true;
     }
