@@ -29,6 +29,7 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         new DiscordCommand(event);
+        instance.getLogger().info("Discord command registered! [" + event.getGuild().getName() + "]");
     }
 
     @Override
