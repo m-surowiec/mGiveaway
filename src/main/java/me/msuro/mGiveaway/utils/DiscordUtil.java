@@ -144,9 +144,10 @@ public class DiscordUtil {
             sb.append("<@").append(entry).append(">" + ": " + giveaway.getEntryMap().get(entry).replace("_", "\\\\_") + "\\n");
 
         }
-        if(sb.length() > 2)
+        if(sb.length() > 2) {
             sb.delete(sb.length() - 2, sb.length());
-        json = json.replace("{WINNERS}", sb.toString());
+            json = json.replace("{WINNERS}", sb.toString());
+        }
         return json;
     }
 

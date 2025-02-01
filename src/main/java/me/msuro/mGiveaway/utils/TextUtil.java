@@ -53,7 +53,7 @@ public class TextUtil {
         builder.setTitle("Giveaway zakończony!");
 
         String entries = giveaway.getEntryMap().entrySet().stream()
-                .map(entry -> "<@" + entry.getKey() + ">: " + entry.getValue().replace("_", "\\\\_"))
+                .map(entry -> "<@" + entry.getKey() + ">: " + entry.getValue().replace("_", "\\_"))
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("Brak");
 
