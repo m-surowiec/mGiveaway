@@ -25,10 +25,10 @@ public class Reload implements CommandExecutor {
             sender.sendMessage(TextUtil.process("{PREFIX} &cYou don't have permission to use this command!"));
             return true;
         }
-        int now = (int) System.currentTimeMillis();
+        long now = System.currentTimeMillis();
         sender.sendMessage(TextUtil.process("{PREFIX} &7Reloading plugin..."));
         instance.reloadPlugin();
-        sender.sendMessage(TextUtil.process("{PREFIX} &7Plugin reloaded! " + "&8(&f" + (int) (System.currentTimeMillis() - now) + "ms&8)"));
+        sender.sendMessage(TextUtil.process("{PREFIX} &7Plugin reloaded! " + "&8(&f" + (System.currentTimeMillis() - now) + "ms&8)"));
 
         return true;
     }

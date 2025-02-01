@@ -86,9 +86,8 @@ package me.msuro.mGiveaway.utils;
             public void saveEntries(Giveaway giveaway) {
                 HashMap<String, String> entries = instance.getEntries().get(giveaway);
                 if(entries == null || entries.isEmpty()) return;
-                try {
+                try (Connection conn = getConnection()) {
                     instance.getLogger().info("Saving entries for giveaway: " + giveaway.getName() + " (" + entries.size() + ")");
-                    Connection conn = getConnection();
                     String sql = "INSERT OR REPLACE INTO `entries-" + giveaway.getName() + "` (discord_id, minecraft_name) VALUES (?, ?)";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     for (Map.Entry<String, String> entry : entries.entrySet()) {
@@ -98,7 +97,6 @@ package me.msuro.mGiveaway.utils;
                     }
                     pstmt.executeBatch();
                     pstmt.close();
-                    conn.close();
 
                 } catch (SQLException e) {
                     MGiveaway.setPaused(true);

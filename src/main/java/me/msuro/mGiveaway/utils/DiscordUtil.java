@@ -24,6 +24,7 @@ import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -130,8 +131,13 @@ public class DiscordUtil {
         json = json.replace("{WIN-COUNT}", giveaway.getWinCount().toString());
         json = json.replace("{PRIZE}", giveaway.getPrize());
         StringBuilder sb = new StringBuilder(" ");
+        HashMap<String, String> entries = giveaway.getEntryMap();
         for (String entry : giveaway.getWinners()) {
-            sb.append("<@").append(entry).append(">" + ": ").append(giveaway.getEntryMap().get(entry).replace("_", "\\\\_")).append("\\n");
+            sb.append("<@")
+                    .append(entry)
+                    .append(">" + ": ")
+                    .append(entries.get(entry).replace("_", "\\\\_"))
+                    .append("\\n");
 
         }
         if(sb.length() > 2) {
