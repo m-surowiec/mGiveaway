@@ -47,7 +47,7 @@
                                 </relocation>
                             </relocations>
                             <minimizeJar>true</minimizeJar>
-                            <finalName>mGiveaway v${project.version}</finalName>
+                            <finalName>mGiveaway-v${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
