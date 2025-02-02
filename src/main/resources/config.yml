@@ -13,7 +13,6 @@ discord:
     activity_url: "https://mcgramy.pl"
     giveaway_channel: XXX
     log_embed_channel: XXX
-    log_embed_color: "#FFFFFF"
     command:
       name: "create_giveaway"
       description: "Create a giveaway"
@@ -31,7 +30,7 @@ discord:
       {
         "embed": {
           "title": "GIVEAWAY",
-          "color": #FFFFFF,
+          "color": 0xFFFFFF,
           "thumbnail": {
             "url": "https://media.discordapp.net/attachments/1316681865415098368/1335272964131913768/mGiveaway-logo.png?ex=679f915a&is=679e3fda&hm=a8cfa8ba3c69180ce4bce3cb895e4dfd06fd70ae8a4a38993348a3c45dd1b735&=&format=webp&quality=lossless&width=701&height=686"
           },
@@ -63,7 +62,7 @@ discord:
     giveaway_end_embed: |
       { "embed": {
           "title": "GIVEAWAY ENDED",
-          "color": #FFFFFF,
+          "color": 0xFFFFFF,
           "thumbnail": {
               "url": "https://media.discordapp.net/attachments/1316681865415098368/1335272964131913768/mGiveaway-logo.png?ex=679f915a&is=679e3fda&hm=a8cfa8ba3c69180ce4bce3cb895e4dfd06fd70ae8a4a38993348a3c45dd1b735&=&format=webp&quality=lossless&width=701&height=686"
           },
@@ -86,8 +85,38 @@ discord:
           ]
       } }
 
+    # PLACEHOLDERS: {GIVEAWAY-NAME}, {ENTRIES-COUNT}, {PRIZE}, {COMMANDS}, {WINNERS-MENTIONS}, {ENTRIES-LIST}
+    giveaway_log_embed: |
+      {
+        "embed": {
+          "title": "GIVEAWAY ENDED (LOG)", 
+          "color": "0xFFFFFF",
+          "fields": [
+            {
+              "name": ":trophy: **Giveaway:**",
+              "value": "**{GIVEAWAY-NAME}** [{ENTRIES-COUNT}]"
+            },
+            {
+              "name": ":gift: **Prize:**",
+              "value": "{PRIZE} [{COMMANDS}]" 
+            },
+            {
+              "name": ":busts_in_silhouette: **Winners:**",
+              "value": "{WINNERS-MENTIONS}"
+            },
+            {
+              "name": ":clipboard: **Entries:**", 
+              "value": "{ENTRIES-LIST}" 
+            }
+          ],
+        }
+      }
+
 messages:
   discord:
+    embed_title:
+      success: "Success!"
+      error: "There was an error!"
     giveaway_join:
       already_joined: "You have already joined the giveaway as %player%!"
       nick_already_joined: "This nickname has already joined the giveaway!"
@@ -96,18 +125,21 @@ messages:
       already_ended: "The giveaway has already ended!"
     giveaway_command_error:
       no_permission: "You don't have permission to use this command!"
-      plugin_paused: ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED)
-      giveaway_requirement_error:
-        null_player: "**You have never joined the server!**"
-        requirements_not_met: "**You do not meet the requirements to enter the giveaway!** \n%requirements%" # %requirements% placeholder for list
-      giveaway_modal:
-        join_modal_title: "Join Giveaway" # Modal title
-        nick_input_question: "What nickname do you want to submit for the giveaway?" # Modal input question
-        nick_input_placeholder: "Your Nickname" # Modal input placeholder
-      giveaway_button:
-        # PRIMARY, SECONDARY, SUCCESS, DANGER
-        join_button_type:
-        join_button_text: "Join Giveaway" # Button text
+      plugin_paused: "Giveaways are paused! There's a plugin error!"
+    giveaway_requirement_error:
+      null_player: "**You have never joined the server!**"
+      requirements_not_met: "**You do not meet the requirements to enter the giveaway!**\n%requirements%" # %requirements% placeholder for list%requirements% placeholder for list
+    giveaway_modal:
+      join_modal_title: "Join Giveaway"
+      nick_input_question: "Minecraft nickname:"
+      nick_input_placeholder: "Your Nickname"
+    giveaway_button:
+      # PRIMARY, SECONDARY, SUCCESS, DANGER
+      join_button_type: PRIMARY
+      join_button_text: "Join Giveaway"
+      join_button_emoji: "🎉"
+  in_game:
+    no_permission: "%prefix% &cYou don't have permission to use this command!"
 
 
 
@@ -119,7 +151,7 @@ giveaways:
       # Date, when the giveaway should automatically start (not required) [dd/MM/yyyy HH:mm:ss]
       scheduled_start: 31/12/2024 23:59:59
       # Date, when the giveaway should automatically end (required) [dd/MM/yyyy HH:mm:ss]
-      end_time: 02/04/2025 23:59:59
+      end_time: 31/12/2026 23:59:59
       # Number of winners (required)
       winners: 10
       # Commands, which should be executed when the winner applies for his reward (required) [placeholders: %player% - winner's submitted name]
@@ -142,10 +174,12 @@ giveaways:
       # Placeholder value of `chatgames_points` must be between 50 and 100 to join the giveaway (not required)
       placeholder:
         chatgames_points:
+          formatted: "ChatGames points > 50 and <= 100"
           over: 50
           under: 100
       # User must have permission `mcgramy.giveaway` but not `op` to join the giveaway (not required) [`-` is replaced with `.`]
       permission:
+        formatted: "`mcgramy.giveaway` permission and no `op`"
         op: false
         mcgramy-giveaway: true
 

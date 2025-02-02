@@ -4,6 +4,8 @@ import me.msuro.mGiveaway.MGiveaway;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -23,17 +25,19 @@ public class ConfigUtil {
         instance.saveDefaultConfig();
         config = YamlConfiguration.loadConfiguration(new File(instance.getDataFolder(), "config.yml"));
 
-        if(!new File(instance.getDataFolder(), "config.yml").exists()) {
+        if (!new File(instance.getDataFolder(), "config.yml").exists()) {
             instance.saveResource("config.yml", false);
             instance.getLogger().info("Config file created!");
         } else {
             if (config.getKeys(false).isEmpty()) {
-                instance.getLogger().warning("Config file is empty! Please fill it with the required values.");
+                instance.getLogger().warning("Config file is empty! Loading default config...");
+                instance.saveResource("config.yml", true);
+                reloadConfig();
             } else {
                 instance.getLogger().info("Config file loaded successfully!");
             }
         }
-        if(getOptional(CONFIG_VERSION) == null) {
+        if (getOptional(CONFIG_VERSION) == null) {
             config.set(CONFIG_VERSION, "0.1");
             saveConfig();
         }
@@ -70,7 +74,7 @@ public class ConfigUtil {
     }
 
     public static String getPrefix() {
-        return instance.getConfig().getString("prefix");
+        return getOrDefault(PREFIX);
     }
 
     /**
@@ -90,6 +94,31 @@ public class ConfigUtil {
             value = "null";
         } else if (value.equals("XXX")) {
             instance.getLogger().warning("Config value " + key + " not set!");
+        }
+        return value;
+    }
+
+    /**
+     * Gets a value from the default config file if it is not set in the current config file.
+     * Useful for getting plugin messages that are configurable but required for the plugin to work.
+     *
+     * @param key The key of the value to get
+     * @return The value if it exists, "null" otherwise
+     */
+    public static String getOrDefault(String key) {
+        String value = config.getString(key);
+        if (value == null) {
+            InputStream defaultConfigStream = instance.getResource("config.yml");
+            if (defaultConfigStream == null) {
+                instance.getLogger().severe("Default config not found!");
+                return "null";
+            }
+            YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultConfigStream));
+            value = defaultConfig.getString(key);
+            if (value == null) {
+                instance.getLogger().severe("Default config value " + key + " not found!");
+                return "null";
+            }
         }
         return value;
     }
@@ -120,7 +149,7 @@ public class ConfigUtil {
     }
 
     public static boolean createGiveaway(String name, String prize, String minecraftPrize, String duration, int winners, String command, boolean requirements) {
-        if(getOptional("giveaways." + name + ".settings.end_time") != null) return false;
+        if (getOptional("giveaways." + name + ".settings.end_time") != null) return false;
         config.createSection("giveaways." + name);
         long durationInSeconds = parseDuration(duration);
         LocalDateTime endTime = LocalDateTime.now().plusSeconds(durationInSeconds);
@@ -131,7 +160,7 @@ public class ConfigUtil {
         config.set("giveaways." + name + ".settings.prize_formatted", prize);
         config.set("giveaways." + name + ".settings.minecraft_prize", minecraftPrize);
 
-        if(!requirements) config.set(ConfigUtil.FORCE_START.replace("%s", name), true);
+        if (!requirements) config.set(ConfigUtil.FORCE_START.replace("%s", name), true);
 
         saveConfig();
         reloadConfig();
@@ -141,11 +170,11 @@ public class ConfigUtil {
     Map<String, Long> timeMultipliers = new HashMap<>();
 
 
-
     /**
      * Parses a duration string and returns the total duration in seconds.
      * The duration string should be in the format "1mo 2w 7d 5m 3s".
      * The supported units are months (mo), weeks (w), days (d), minutes (m), and seconds (s).
+     *
      * @param duration The duration string to parse
      * @return The total duration in seconds
      */
@@ -186,8 +215,8 @@ public class ConfigUtil {
                 throw new IllegalArgumentException("Unknown time unit: " + unit);
             }
 
-            try{
-                totalSeconds = Math.addExact(totalSeconds, Math.multiplyExact(value,timeMultipliers.get(unit)));
+            try {
+                totalSeconds = Math.addExact(totalSeconds, Math.multiplyExact(value, timeMultipliers.get(unit)));
             } catch (ArithmeticException ex) {
                 throw new IllegalArgumentException("Duration value too large: " + value + unit, ex);
             }
@@ -200,34 +229,43 @@ public class ConfigUtil {
 
     public static void updateConfig() {
         String version = getAndValidate(CONFIG_VERSION);
-        if(version.equalsIgnoreCase("0.1") || version.equalsIgnoreCase("0.4")) {
+        if (version.equalsIgnoreCase("0.1") || version.equalsIgnoreCase("0.4")) {
             // Discord command options description
-            config.set(DISCORD_OPTIONS_NAME, "Name of the giveaway");
-            config.set(DISCORD_OPTIONS_PRIZE, "Formatted name of the prize");
-            config.set(DISCORD_OPTIONS_MINECRAFT_PRIZE, "Prize in Minecraft format (For broadcast message)");
-            config.set(DISCORD_OPTIONS_DURATION, "Duration of the giveaway in `Xmo Xd Xh Xm Xs` format");
-            config.set(DISCORD_OPTIONS_WINNERS, "Number of winners");
-            config.set(DISCORD_OPTIONS_COMMAND, "First command to execute for the players (%player% is the winner's name). If you want to add more commands, use the minecraft config file");
-            config.set(DISCORD_OPTIONS_REQUIREMENTS, "Set to `true` if you want to manually add requirements to the giveaway in the `config.yml` *before* it starts. If `false` or null, the giveaway starts immediately after creation.");
+            config.set(DISCORD_OPTIONS_NAME, getOrDefault(DISCORD_OPTIONS_NAME));
+            config.set(DISCORD_OPTIONS_PRIZE, getOrDefault(DISCORD_OPTIONS_PRIZE));
+            config.set(DISCORD_OPTIONS_MINECRAFT_PRIZE, getOrDefault(DISCORD_OPTIONS_MINECRAFT_PRIZE));
+            config.set(DISCORD_OPTIONS_DURATION, getOrDefault(DISCORD_OPTIONS_DURATION));
+            config.set(DISCORD_OPTIONS_WINNERS, getOrDefault(DISCORD_OPTIONS_WINNERS));
+            config.set(DISCORD_OPTIONS_COMMAND, getOrDefault(DISCORD_OPTIONS_COMMAND));
+            config.set(DISCORD_OPTIONS_REQUIREMENTS, getOrDefault(DISCORD_OPTIONS_REQUIREMENTS));
             // Giveaway join messages
-            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED, "You have already joined the giveaway as %player%!");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED, "This nickname has already joined the giveaway!");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_JOINED, "You have joined the giveaway as %player%!");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED, "The giveaway has not started yet!");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED, "The giveaway has already ended!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_JOINED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_JOIN_JOINED));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED));
             // Giveaway command error messages
-            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION, "You don't have permission to use this command!");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED));
             // Giveaway requirement error messages
-            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER, "**You have never joined the server!**");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET, "**You do not meet the requirements to enter the giveaway!** \n%requirements%");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET));
             // Giveaway modal messages
-            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE, "Join Giveaway");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION, "What nickname do you want to submit for the giveaway?");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER, "Your Nickname");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER));
             // Giveaway button messages
-            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE, "PRIMARY");
-            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT, "Join Giveaway");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_EMOJI, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_EMOJI));
+            // In-game messages
+            config.set(MESSAGES_IN_GAME_NO_PERMISSION, getOrDefault(MESSAGES_IN_GAME_NO_PERMISSION));
+            // Embed titles
+            config.set(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS));
+            config.set(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR));
+            // Log embed
+            config.set(GIVEAWAY_LOG_EMBED, getOrDefault(GIVEAWAY_LOG_EMBED));
+
 
             config.set(CONFIG_VERSION, "0.5");
             saveConfig();
@@ -245,10 +283,10 @@ public class ConfigUtil {
 
     public static final String GIVEAWAY_EMBED = "discord.bot.giveaway_embed";
     public static final String GIVEAWAY_END_EMBED = "discord.bot.giveaway_end_embed";
+    public static final String GIVEAWAY_LOG_EMBED = "discord.bot.giveaway_log_embed";
     public static final String GIVEAWAY_CHANNEL = "discord.bot.giveaway_channel";
 
     public static final String LOG_EMBED_CHANNEL = "discord.bot.log_embed_channel";
-    public static final String LOG_EMBED_COLOR = "discord.bot.log_embed_color";
 
     public static final String ACTIVITY = "discord.bot.activity";
     public static final String ACTIVITY_TEXT = "discord.bot.activity_text";
@@ -257,9 +295,6 @@ public class ConfigUtil {
 
     public static final String COMMAND_NAME = "discord.bot.command.name";
     public static final String COMMAND_DESCRIPTION = "discord.bot.command.description";
-
-
-    public static final String ENTRIES = "entries.%s";
 
     public static final String STAT_ENTERED = "stats.%s.entered";
     public static final String STAT_WON = "stats.%s.won";
@@ -306,8 +341,11 @@ public class ConfigUtil {
 
     public static final String MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE = "messages.discord.giveaway_button.join_button_type";
     public static final String MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT = "messages.discord.giveaway_button.join_button_text";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_EMOJI = "messages.discord.giveaway_button.join_button_emoji";
 
+    public static final String MESSAGES_IN_GAME_NO_PERMISSION = "messages.in_game.no_permission";
 
-
+    public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS = "messages.discord.embed_title.success";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR = "messages.discord.embed_title.error";
 
 }

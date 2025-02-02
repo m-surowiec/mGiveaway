@@ -89,12 +89,12 @@ public class DiscordListener extends ListenerAdapter {
     public void onModalInteraction(@NotNull ModalInteractionEvent event) {
         if (!Objects.requireNonNull(event.getMessage()).getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId()))
             return;
-        if (!event.getModalId().startsWith("join_giveaway_")) return;
+        if (!event.getModalId().startsWith("giveaway_")) return;
         if (MGiveaway.isPaused()) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
             return;
         }
-        Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(14));
+        Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(9));
         if (giveaway == null) return;
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
         if (giveaway.getEntryMap().containsValue(nick)) {

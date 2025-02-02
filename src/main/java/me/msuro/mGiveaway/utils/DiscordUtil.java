@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -47,15 +48,17 @@ public class DiscordUtil {
         // "XXX" is the default value for all config values
         if (token.equalsIgnoreCase("XXX")) {
             instance.getLogger().severe("Bot token not set!");
-            instance.getServer().getPluginManager().disablePlugin(instance);
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe(ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED));
             return;
         }
         try {
             jda = JDABuilder.createDefault(token).setActivity(Activity.playing("with giveaways")).setStatus(OnlineStatus.ONLINE).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
         } catch (InvalidTokenException e) {
-            instance.getLogger().severe("Failed to start Discord bot");
-            instance.getServer().getPluginManager().disablePlugin(instance);
-            throw new RuntimeException(e);
+            instance.getLogger().severe("Failed to start Discord bot " + e.getMessage());
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe(ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED));
+            return;
         }
         jda.getPresence().setActivity(getActivity());
         jda.getPresence().setStatus(getStatus());
@@ -123,13 +126,15 @@ public class DiscordUtil {
     }
 
     public String replaceJsonPlaceholders(String json, Giveaway giveaway) {
-        //PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}, {WINNERS}
+        // GLOBAL REPLACEMENTS - PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         json = json.replace("{TIME-LEFT}", "<t:" + giveaway.getEndTimeFormatted().toEpochSecond(ZoneOffset.of("+01:00")) + ":R>");
         json = json.replace("{END-TIME}", giveaway.getEndTime());
         json = json.replace("{ENTRIES}", giveaway.getEntryMap().size() + "");
         json = json.replace("{WIN-COUNT}", giveaway.getWinCount().toString());
         json = json.replace("{PRIZE}", giveaway.getPrize());
+
+        // END GIVEAWAY EMBED REPLACEMENTS - PLACEHOLDER: {WINNERS}
         StringBuilder sb = new StringBuilder(" ");
         HashMap<String, String> entries = giveaway.getEntryMap();
         for (String entry : giveaway.getWinners()) {
@@ -144,6 +149,26 @@ public class DiscordUtil {
             sb.delete(sb.length() - 2, sb.length());
             json = json.replace("{WINNERS}", sb.toString());
         }
+
+        // LOG EMBED GIVEAWAY REPLACEMENTS - PLACEHOLDERS: {GIVEAWAY-NAME}, {ENTRIES-COUNT}, {PRIZE}, {COMMANDS}, {WINNERS-MENTIONS}, {ENTRIES-LIST}
+        json = json.replace("{GIVEAWAY-NAME}", giveaway.getName());
+        json = json.replace("{ENTRIES-COUNT}", giveaway.getEntryMap().size() + "");
+        json = json.replace("{PRIZE}", giveaway.getPrize());
+        json = json.replace("{COMMANDS}", String.join(",", giveaway.getCommands()));
+        sb = new StringBuilder(" ");
+        for (String winner : giveaway.getWinners()) {
+            sb.append("<@").append(winner).append("> ");
+        }
+        json = json.replace("{WINNERS-MENTIONS}", sb.toString());
+        sb = new StringBuilder(" ");
+        for (String entry : entries.keySet()) {
+            sb.append("<@").append(entry).append(">: ").append(entries.get(entry).replace("_", "\\\\_")).append("\\n");
+        }
+        json = json.replace("{ENTRIES-LIST}", sb.toString());
+
+
+
+
         return json;
     }
 
@@ -152,12 +177,15 @@ public class DiscordUtil {
      * Returns an {@link EmbedBuilder} object from the config file
      *
      * @param giveaway {@link Giveaway} object
-     * @param type     1 for giveaway, 2 for giveaway end
+     * @param type     1 for giveaway, 2 for giveaway end, 3 for log
      * @return {@link EmbedBuilder} object
      */
     public EmbedBuilder getEmbedBuilderFromConfig(Giveaway giveaway, int type) {
         EmbedBuilder eb = new EmbedBuilder();
-        String path = type == 2 ? ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_END_EMBED) : ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_EMBED);
+        String path = (type == 1 ? ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_EMBED) :
+                type == 2 ? ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_END_EMBED) :
+                        ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_LOG_EMBED));
+
         String json = replaceJsonPlaceholders(path, giveaway);
         JSONObject messageObj = new JSONObject(json);
         JSONObject embedObj = messageObj.getJSONObject("embed");
@@ -195,12 +223,23 @@ public class DiscordUtil {
     public ItemComponent getButton(Giveaway giveaway) {
         String type = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE);
         String text = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT);
-        return switch (type.toUpperCase()) {
-            case "PRIMARY" -> Button.primary("giveaway_" + giveaway.getName(), text);
-            case "SECONDARY" -> Button.secondary("giveaway_" + giveaway.getName(), text);
-            case "DANGER" -> Button.danger("giveaway_" + giveaway.getName(), text);
-            default -> Button.success("giveaway_" + giveaway.getName(), text);
-        };
+        String emoji = ConfigUtil.getOptional(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_EMOJI);
+        if(emoji == null || emoji.isEmpty()) {
+            return switch (type) {
+                case "SECONDARY" -> Button.secondary("giveaway_" + giveaway.getName(), text);
+                case "SUCCESS" -> Button.success("giveaway_" + giveaway.getName(), text);
+                case "DANGER" -> Button.danger("giveaway_" + giveaway.getName(), text);
+                default -> Button.primary("giveaway_" + giveaway.getName(), text);
+            };
+        } else {
+            Emoji emo = Emoji.fromUnicode(emoji);
+            return switch (type) {
+                case "SECONDARY" -> Button.secondary("giveaway_" + giveaway.getName(), text).withEmoji(emo);
+                case "SUCCESS" -> Button.success("giveaway_" + giveaway.getName(), text).withEmoji(emo);
+                case "DANGER" -> Button.danger("giveaway_" + giveaway.getName(), text).withEmoji(emo);
+                default -> Button.primary("giveaway_" + giveaway.getName(), text).withEmoji(emo);
+            };
+        }
     }
 
     public Modal getJoinForm(Giveaway giveaway) {
@@ -210,7 +249,7 @@ public class DiscordUtil {
                 .setMaxLength(16)
                 .setRequired(true)
                 .build();
-        return Modal.create("join_giveaway_" + giveaway.getName(), ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE))
+        return Modal.create("giveaway_" + giveaway.getName(), ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE))
                 .addActionRow(ic)
                 .build();
     }

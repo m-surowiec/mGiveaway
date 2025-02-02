@@ -2,7 +2,6 @@ package me.msuro.mGiveaway;
 
 import com.jeff_media.updatechecker.UpdateCheckSource;
 import com.jeff_media.updatechecker.UpdateChecker;
-import com.jeff_media.updatechecker.VersionSupplier;
 import me.msuro.mGiveaway.classes.Giveaway;
 import me.msuro.mGiveaway.commands.Reload;
 import me.msuro.mGiveaway.utils.ConfigUtil;
@@ -123,17 +122,28 @@ public final class MGiveaway extends JavaPlugin {
             return;
         }
 
+        new Reload();
+
         new ConfigUtil();
         TextUtil.setInstance(this);
-        TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+        TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
 
         discordUtil = new DiscordUtil();
+
+        if(isPaused())
+            return;
+
         discordUtil.build();
+
+        if(isPaused())
+            return;
+
         new DiscordListener();
 
         dbUtils = new DBUtils();
 
-        new Reload();
+        if(isPaused())
+            return;
 
         getLogger().info("Plugin enabled!");
         int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
@@ -143,7 +153,7 @@ public final class MGiveaway extends JavaPlugin {
             if(!isPaused()) {
                 n[0]++;
                 ConfigUtil.reloadConfig();
-                TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+                TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
                 List<Giveaway> newGiveaways = fetchGiveaways();
 
                 for (Giveaway giveaway : newGiveaways) {
@@ -175,7 +185,7 @@ public final class MGiveaway extends JavaPlugin {
                             });
                         }
                         discordUtil.sendGiveawayEndEmbed(giveaway, winners);
-                        TextUtil.sendGiveawayEmbed(giveaway);
+                        TextUtil.sendLogEmbed(giveaway);
                     } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
                         Bukkit.broadcastMessage(TextUtil.process(message
                                 .replace("%winners%", String.valueOf(giveaway.getWinCount()))
@@ -294,6 +304,8 @@ public final class MGiveaway extends JavaPlugin {
     public void reloadPlugin() {
         onDisable();
 
+        clearGiveaways();
+
         setPaused(false);
 
         getLogger().info("Reloading plugin...");
@@ -305,7 +317,7 @@ public final class MGiveaway extends JavaPlugin {
         getLogger().info("Reloading config...");
         new ConfigUtil();
         TextUtil.setInstance(this);
-        TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+        TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
 
         getLogger().info("Reloading Discord bot...");
         if(discordUtil != null && discordUtil.getJDA() != null && discordUtil.getJDA().getStatus() == JDA.Status.CONNECTED) {
@@ -329,7 +341,7 @@ public final class MGiveaway extends JavaPlugin {
             if(!isPaused()) {
                 n[0]++;
                 ConfigUtil.reloadConfig();
-                TextUtil.prefix = ConfigUtil.getAndValidate(ConfigUtil.PREFIX);
+                TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
                 List<Giveaway> newGiveaways = fetchGiveaways();
 
                 for (Giveaway giveaway : newGiveaways) {
@@ -361,7 +373,7 @@ public final class MGiveaway extends JavaPlugin {
                             });
                         }
                         discordUtil.sendGiveawayEndEmbed(giveaway, winners);
-                        TextUtil.sendGiveawayEmbed(giveaway);
+                        TextUtil.sendLogEmbed(giveaway);
                     } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
                         Bukkit.broadcastMessage(TextUtil.process(message
                                 .replace("%winners%", String.valueOf(giveaway.getWinCount()))
@@ -375,5 +387,9 @@ public final class MGiveaway extends JavaPlugin {
 
 
         getLogger().info("Reloading plugin complete!");
+    }
+
+    public void clearGiveaways() {
+        giveaways.clear();
     }
 }

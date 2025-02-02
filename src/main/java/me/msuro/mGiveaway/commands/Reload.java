@@ -1,6 +1,7 @@
 package me.msuro.mGiveaway.commands;
 
 import me.msuro.mGiveaway.MGiveaway;
+import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.TextUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,7 +23,7 @@ public class Reload implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(!command.getName().equalsIgnoreCase("mgwreload")) return true;
         if(!sender.hasPermission("mgiveaway.reload")) {
-            sender.sendMessage(TextUtil.process("%prefix% &cYou don't have permission to use this command!"));
+            sender.sendMessage(TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_IN_GAME_NO_PERMISSION)));
             return true;
         }
         long now = System.currentTimeMillis();
