@@ -232,7 +232,7 @@ public class ConfigUtil {
             config.set(CONFIG_VERSION, "0.5");
             saveConfig();
             reloadConfig();
-            instance.getLogger().info("Config updated to version 5.0!");
+            instance.getLogger().info("Config updated to version 0.5!");
         }
     }
 
