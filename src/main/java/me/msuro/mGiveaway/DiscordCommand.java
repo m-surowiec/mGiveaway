@@ -17,16 +17,18 @@ public class DiscordCommand extends ListenerAdapter {
         instance.getDiscordUtil().getJDA().addEventListener(this);
         String commandName = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME);
         String commandDesc = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_DESCRIPTION);
+        // v0.5 -> Make command options description configurable
+        // v0.5 -> switch `prize_placeholder` to `minecraft_prize`
         SlashCommandData c = Commands
                 .slash(commandName, commandDesc)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
-                .addOption(OptionType.STRING, "name", "The name of the giveaway", true)
-                .addOption(OptionType.STRING, "prize", "Formatted name of the prize", true)
-                .addOption(OptionType.STRING, "prize_placeholder", "Placeholder for the prize displayed in the in-game messages", true)
-                .addOption(OptionType.STRING, "duration", "The duration of the giveaway (1mo 2w 7d 5m 3s)", true)
-                .addOption(OptionType.INTEGER, "winners", "The number of winners", true)
-                .addOption(OptionType.STRING, "command", "First command to execute (if you want to run multiple commands, add them in config)", true)
-                .addOption(OptionType.BOOLEAN, "requirements", "If the giveaway should wait for you to add requirements", false);
+                .addOption(OptionType.STRING, "name", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_NAME), true)
+                .addOption(OptionType.STRING, "prize", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_PRIZE), true)
+                .addOption(OptionType.STRING, "minecraft_prize", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_MINECRAFT_PRIZE), true)
+                .addOption(OptionType.STRING, "duration", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_DURATION), true)
+                .addOption(OptionType.INTEGER, "winners", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_WINNERS), true)
+                .addOption(OptionType.STRING, "command", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_COMMAND), true)
+                .addOption(OptionType.BOOLEAN, "requirements", ConfigUtil.getAndValidate(ConfigUtil.DISCORD_OPTIONS_REQUIREMENTS), false);
 
         Guild guild = event.getGuild();
         guild.upsertCommand(c).queue();

@@ -17,6 +17,15 @@ discord:
     command:
       name: "create_giveaway"
       description: "Create a giveaway"
+      # Description of the options. The key is the option name, the value is the description
+      options:
+        name: "Name of the giveaway"
+        prize: "Formatted name of the prize"
+        minecraft_prize: "Prize in Minecraft format (For broadcast message)"
+        duration: "Duration of the giveaway in `Xmo Xd Xh Xm Xs` format"
+        winners: "Number of winners"
+        command: "First command to execute (%player% is the winner's nick). You can add more in the config.yml"
+        requirements: "'true' if there will be requirements added, 'false' or null if not (immidiate start)"
     # PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
     giveaway_embed: |
       {
@@ -77,6 +86,30 @@ discord:
           ]
       } }
 
+messages:
+  discord:
+    giveaway_join:
+      already_joined: "You have already joined the giveaway as %player%!"
+      nick_already_joined: "This nickname has already joined the giveaway!"
+      joined: "You have joined the giveaway as %player%!"
+      not_started: "The giveaway has not started yet!"
+      already_ended: "The giveaway has already ended!"
+    giveaway_command_error:
+      no_permission: "You don't have permission to use this command!"
+      plugin_paused: ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED)
+      giveaway_requirement_error:
+        null_player: "**You have never joined the server!**"
+        requirements_not_met: "**You do not meet the requirements to enter the giveaway!** \n%requirements%" # %requirements% placeholder for list
+      giveaway_modal:
+        join_modal_title: "Join Giveaway" # Modal title
+        nick_input_question: "What nickname do you want to submit for the giveaway?" # Modal input question
+        nick_input_placeholder: "Your Nickname" # Modal input placeholder
+      giveaway_button:
+        # PRIMARY, SECONDARY, SUCCESS, DANGER
+        join_button_type:
+        join_button_text: "Join Giveaway" # Button text
+
+
 
 
 
@@ -95,7 +128,7 @@ giveaways:
       # Prize, which will be displayed in the giveaway message (required)
       prize_formatted: "5x Diamond"
       # Placeholder used in the interval broadcast (line 4) (required)
-      prize_placeholder: "5 diamonds"
+      minecraft_prize: "5 diamonds"
     requirements:
       # User must have VIP but not ADMIN role to join the giveaway (not required)
       group:
@@ -116,4 +149,5 @@ giveaways:
         op: false
         mcgramy-giveaway: true
 
-stats:
+# DO NOT EDIT THIS VALUE
+config_version: 0.5

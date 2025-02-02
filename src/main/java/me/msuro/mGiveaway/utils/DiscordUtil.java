@@ -193,18 +193,24 @@ public class DiscordUtil {
     }
 
     public ItemComponent getButton(Giveaway giveaway) {
-        return Button.success("giveaway_" + giveaway.getName(), "Dołącz do losowania");
+        String type = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE);
+        String text = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT);
+        return switch (type.toUpperCase()) {
+            case "PRIMARY" -> Button.primary("giveaway_" + giveaway.getName(), text);
+            case "SECONDARY" -> Button.secondary("giveaway_" + giveaway.getName(), text);
+            case "DANGER" -> Button.danger("giveaway_" + giveaway.getName(), text);
+            default -> Button.success("giveaway_" + giveaway.getName(), text);
+        };
     }
 
     public Modal getJoinForm(Giveaway giveaway) {
-        ItemComponent ic = TextInput.create("nick", "Jaki nick chcesz zgłosić do losowania?", TextInputStyle.SHORT)
-                .setPlaceholder("Twój nick")
+        ItemComponent ic = TextInput.create("nick", ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION), TextInputStyle.SHORT)
+                .setPlaceholder(ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER))
                 .setMinLength(3)
                 .setMaxLength(16)
                 .setRequired(true)
                 .build();
-
-        return Modal.create("join_giveaway_" + giveaway.getName(), "Join Giveaway")
+        return Modal.create("join_giveaway_" + giveaway.getName(), ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE))
                 .addActionRow(ic)
                 .build();
     }
