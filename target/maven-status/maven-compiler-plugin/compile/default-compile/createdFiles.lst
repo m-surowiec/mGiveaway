@@ -16,4 +16,5 @@ me/msuro/mGiveaway/commands/Reload.class
 me/msuro/mGiveaway/utils/colors/patterns/RainbowPattern.class
 me/msuro/mGiveaway/utils/colors/ColorAPI.class
 me/msuro/mGiveaway/utils/DBUtils.class
+me/msuro/mGiveaway/classes/Giveaway$2.class
 me/msuro/mGiveaway/classes/Requirement$1.class

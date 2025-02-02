@@ -21,16 +21,16 @@ public class Giveaway {
     private final String DEFAULT_VALUE = "null";
 
     // Giveaway settings
-    private String          name                = DEFAULT_VALUE;
-    private String          prize               = DEFAULT_VALUE;
-    private String          minecraftPrize      = DEFAULT_VALUE;
-    private String          endTime             = DEFAULT_VALUE;
-    private LocalDateTime   endTimeFormatted    = null;
-    private String          startTime           = null;
-    private LocalDateTime   startTimeFormatted  = null;
-    private List<String>    commands            = new ArrayList<>();
-    private Integer         winCount            = -1;
-    private boolean         started             = false;
+    private String name = DEFAULT_VALUE;
+    private String prize = DEFAULT_VALUE;
+    private String minecraftPrize = DEFAULT_VALUE;
+    private String endTime = DEFAULT_VALUE;
+    private LocalDateTime endTimeFormatted = null;
+    private String startTime = null;
+    private LocalDateTime startTimeFormatted = null;
+    private List<String> commands = new ArrayList<>();
+    private Integer winCount = -1;
+    private boolean started = false;
 
     private List<String> winners = new ArrayList<>();
 
@@ -48,9 +48,9 @@ public class Giveaway {
 
     @Nullable
     public Giveaway fromConfig(String giveawayName) {
-        if(giveawayName == null)
+        if (giveawayName == null)
             throw new IllegalArgumentException("Giveaway name cannot be null");
-        if(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null || Objects.requireNonNull(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName)).getKeys(true).isEmpty())
+        if (ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName) == null || Objects.requireNonNull(ConfigUtil.getConfig().getConfigurationSection("giveaways." + giveawayName)).getKeys(true).isEmpty())
             return null;
         this.name = giveawayName;
         // the path to giveaway is giveaways.<giveawayName>. ... so we need to replace %s with giveawayName
@@ -66,13 +66,13 @@ public class Giveaway {
 
         this.endTimeFormatted = LocalDateTime.parse(endTime, formatter);
 
-        if(startTime != null) {
+        if (startTime != null) {
             this.startTimeFormatted = LocalDateTime.parse(startTime, formatter);
         }
 
         this.requirements = getRequirements();
 
-        if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || minecraftPrize == null) {
+        if (name == null || endTime == null || prize == null || winCount < 0 || commands == null || minecraftPrize == null) {
             throw new IllegalArgumentException("Giveaway settings cannot be null " + this);
         }
         try {
@@ -97,6 +97,7 @@ public class Giveaway {
      * @return A list of winners.
      */
     public List<String> endGiveaway() {
+        instance.getDBUtil().saveEntries(this);
         List<String> winners = new ArrayList<>();
         List<String> entries = new ArrayList<>(getEntryMap().keySet());
         Collections.shuffle(entries);
@@ -179,7 +180,7 @@ public class Giveaway {
 
     public boolean hasEnded() {
         String val = ConfigUtil.getOptional(ConfigUtil.ENDED.replace("%s", name));
-        if(val == null) return false;
+        if (val == null) return false;
         return Boolean.parseBoolean(val);
     }
 
@@ -187,7 +188,7 @@ public class Giveaway {
         // return endtime-now in "xd yh zm" format
         LocalDateTime now = LocalDateTime.now();
         long diff = endTimeFormatted.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
-        if(diff <= 0) {
+        if (diff <= 0) {
             return "0m";
         }
         long days = diff / 86400;
@@ -201,7 +202,7 @@ public class Giveaway {
 
 
     public List<Requirement> getRequirements() {
-        if(requirements == null || requirements.isEmpty())
+        if (requirements == null || requirements.isEmpty())
             refreshRequirements();
         return requirements;
 
@@ -275,22 +276,24 @@ public class Giveaway {
     private void refreshRequirements() {
         List<Requirement> requirements = new ArrayList<>();
         ConfigurationSection section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PERMISSION.replace("%s", name));
-        if(section != null)
-            for(String key : section.getKeys(false)) {
-                requirements.add(new Requirement(
-                        key.replace("-", "."),
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                Requirement req = new Requirement(
+                        key,
                         Requirement.Type.PERMISSION,
                         section.getBoolean(key + ".value"),
                         -2147483648,
                         ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
                                 .replace("%s", name)
                                 .replace("%t", "permission")
-                                .replace("%r", key))));
+                                .replace(".%r", key)));
+                requirements.add(req);
             }
+        }
         section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_GROUP.replace("%s", name));
-        if(section != null)
-            for(String key : section.getKeys(false)) {
-                requirements.add(new Requirement(
+        if (section != null)
+            for (String key : section.getKeys(false)) {
+                Requirement req = new Requirement(
                         key,
                         Requirement.Type.ROLE,
                         section.getBoolean(key + ".value"),
@@ -298,33 +301,38 @@ public class Giveaway {
                         ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
                                 .replace("%s", name)
                                 .replace("%t", "group")
-                                .replace("%r", key))));
+                                .replace("%r", key)));
+                requirements.add(req);
             }
         section = ConfigUtil.getConfig().getConfigurationSection(ConfigUtil.REQUIREMENT_PLACEHOLDER.replace("%s", name));
-        if(section != null)
+        if (section != null)
             for (String key : section.getKeys(false)) {
                 String value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".over");
-                if (value != null)
-                    requirements.add(new Requirement(
+                if (value != null) {
+                    Requirement req = new Requirement(
                             key,
                             Requirement.Type.NUMBER,
                             true,
                             Integer.parseInt(value),
                             ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
                                     .replace("%s", name)
-                                    .replace("%t", "number")
-                                    .replace("%r", key))));
+                                    .replace("%t", "placeholder")
+                                    .replace("%r", key)));
+                    requirements.add(req);
+                }
                 value = ConfigUtil.getOptional(section.getCurrentPath() + "." + key + ".under");
-                if (value != null)
-                    requirements.add(new Requirement(
+                if (value != null) {
+                    Requirement req = new Requirement(
                             key,
                             Requirement.Type.NUMBER,
                             false,
                             Integer.parseInt(value),
                             ConfigUtil.getOptional(ConfigUtil.REQUIREMENT_FORMATTED
                                     .replace("%s", name)
-                                    .replace("%t", "number")
-                                    .replace("%r", key))));
+                                    .replace("%t", "placeholder")
+                                    .replace("%r", key)));
+                    requirements.add(req);
+                }
             }
         this.requirements = requirements;
     }
@@ -366,7 +374,9 @@ public class Giveaway {
 
     public void addEntry(String id, String nick) {
         entryMap.put(id, nick);
-        instance.addEntry(this, new HashMap<>(){{put(id, nick);}});
+        instance.addEntry(this, new HashMap<>() {{
+            put(id, nick);
+        }});
     }
 
     public void setEntryMap(HashMap<String, String> entryMap) {
