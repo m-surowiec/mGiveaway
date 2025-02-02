@@ -129,3 +129,9 @@ Use these placeholders within your embed JSON configurations to dynamically disp
 
 *   **Paper Server Required:** mGiveaway is designed and optimized for Paper servers. While it *may* load on Spigot or Bukkit, full functionality and performance are not guaranteed outside of the Paper server environment.
 *   **Configuration Reload:** After making any changes to the `config.yml` file, remember to use the `/mgwreload` command in-game to reload the plugin and apply the new settings without requiring a full server restart.
+
+**ToDo:**
+* **API**
+* **Auto giveaway deletion from config and upload to database**
+* **Stats impemenation**
+* **Fix update checker**
