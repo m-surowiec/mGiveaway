@@ -26,7 +26,7 @@
 
 **✅ Requirements:**
 
-*   **Paper Server:** 1.20+ (Designed and tested for Paper servers for optimal performance and compatibility)
+*   **Paper Server:** 1.17+ (Designed and tested for Paper servers for optimal performance and compatibility)
 *   **PlaceholderAPI:** 2.11.6+
 *   **Vault:** 1.7+
 
