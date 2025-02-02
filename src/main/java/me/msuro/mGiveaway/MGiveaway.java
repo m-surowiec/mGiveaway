@@ -1,5 +1,8 @@
 package me.msuro.mGiveaway;
 
+import com.jeff_media.updatechecker.UpdateCheckSource;
+import com.jeff_media.updatechecker.UpdateChecker;
+import com.jeff_media.updatechecker.VersionSupplier;
 import me.msuro.mGiveaway.classes.Giveaway;
 import me.msuro.mGiveaway.commands.Reload;
 import me.msuro.mGiveaway.utils.ConfigUtil;
@@ -33,6 +36,7 @@ public final class MGiveaway extends JavaPlugin {
     Metrics metrics;
 
     private BukkitTask updateGiveaways;
+    private BukkitTask updateCheck;
 
     private final List<Giveaway> giveaways = new ArrayList<>();
 
@@ -175,13 +179,21 @@ public final class MGiveaway extends JavaPlugin {
                     } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
                         Bukkit.broadcastMessage(TextUtil.process(message
                                 .replace("%winners%", String.valueOf(giveaway.getWinCount()))
-                                .replace("%prize%", giveaway.getPrizePlaceholder())
+                                .replace("%prize%", giveaway.getMinecraftPrize())
                                 .replace("%time_left%", giveaway.getTimeLeft())));
                         n[0] = 0;
                     }
                 }
             }
         }, 120, 20*60);
+
+        updateCheck = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            new UpdateChecker(this, UpdateCheckSource.GITHUB_RELEASE_TAG, "m-surowiec/mGiveaway")
+                    .setNotifyOpsOnJoin(true)
+                    .setDownloadLink("https://github.com/m-surowiec/mGiveaway/releases/latest")
+                    .setColoredConsoleOutput(true)
+                    .checkNow();
+        }, 120, 20*60*30);
     }
 
     @Override
@@ -353,7 +365,7 @@ public final class MGiveaway extends JavaPlugin {
                     } else if (!giveaway.hasEnded() && giveaway.isStarted() && n[0] % interval == 0) {
                         Bukkit.broadcastMessage(TextUtil.process(message
                                 .replace("%winners%", String.valueOf(giveaway.getWinCount()))
-                                .replace("%prize%", giveaway.getPrizePlaceholder())
+                                .replace("%prize%", giveaway.getMinecraftPrize())
                                 .replace("%time_left%", giveaway.getTimeLeft())));
                         n[0] = 0;
                     }

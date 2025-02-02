@@ -2,14 +2,18 @@ package me.msuro.mGiveaway.classes;
 
 import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Giveaway {
 
@@ -19,7 +23,7 @@ public class Giveaway {
     // Giveaway settings
     private String          name                = DEFAULT_VALUE;
     private String          prize               = DEFAULT_VALUE;
-    private String          prizePlaceholder    = DEFAULT_VALUE;
+    private String          minecraftPrize      = DEFAULT_VALUE;
     private String          endTime             = DEFAULT_VALUE;
     private LocalDateTime   endTimeFormatted    = null;
     private String          startTime           = null;
@@ -56,7 +60,7 @@ public class Giveaway {
         this.endTime = ConfigUtil.getAndValidate(ConfigUtil.END_TIME.replace("%s", giveawayName));
         this.startTime = ConfigUtil.getOptional(ConfigUtil.SCH_START.replace("%s", giveawayName));
         this.prize = ConfigUtil.getAndValidate(ConfigUtil.PRIZE_FORMATTED.replace("%s", giveawayName));
-        this.prizePlaceholder = ConfigUtil.getAndValidate(ConfigUtil.PRIZE_PLACEHOLDER.replace("%s", giveawayName));
+        this.minecraftPrize = ConfigUtil.getAndValidate(ConfigUtil.MINECRAFT_PRIZE.replace("%s", giveawayName));
         this.embedId = ConfigUtil.getOptional(ConfigUtil.EMBED_ID.replace("%s", giveawayName));
 
 
@@ -68,7 +72,7 @@ public class Giveaway {
 
         this.requirements = getRequirements();
 
-        if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || prizePlaceholder == null) {
+        if(name == null || endTime == null || prize == null || winCount < 0 || commands == null || minecraftPrize == null) {
             throw new IllegalArgumentException("Giveaway settings cannot be null " + this);
         }
         try {
@@ -109,25 +113,63 @@ public class Giveaway {
     }
 
     /**
-     * Checks if the player meets the requirements for this giveaway.
+     * Checks if the player meets the requirements for this giveaway asynchronously.
+     *
      * @param username The player's username.
-     * @return A list of requirements that are not met.
+     * @param callback A Consumer that accepts a List<Requirement>. This callback will be
+     *                 executed asynchronously on the main thread once the requirements
+     *                 check is complete. The list will contain unmet requirements, or an
+     *                 empty list if all are met, or null if player is not found after API lookup.
      */
-    public List<Requirement> checkRequirements(String username) {
+    public void checkRequirementsAsync(String username, Consumer<List<Requirement>> callback) {
+        if (requirements.isEmpty()) {
+            callback.accept(new ArrayList<>()); // No requirements, return empty list immediately
+            return;
+        }
 
         OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayerIfCached(username);
-        if(player == null) {
-            instance.getLogger().severe("Player " + username + " not found! Tried to join giveaway " + name);
-            return List.of(new Requirement[]{new Requirement("Player not found", Requirement.Type.NULLPLAYER, false, -2147483648, "Player not found")});
+        if (player != null) {
+            // Player is cached, perform synchronous checks and callback immediately on main thread
+            List<Requirement> notMet = checkRequirementsSync(player); // Helper method for sync checks
+            callback.accept(notMet);
+        } else {
+            // Player not cached, perform asynchronous API lookup
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    OfflinePlayer asyncPlayer = Bukkit.getOfflinePlayer(username);
+                    List<Requirement> notMet;
+
+                    if (!asyncPlayer.hasPlayedBefore()) {
+                        notMet = List.of(new Requirement("Player not found", Requirement.Type.NULLPLAYER, false, -2147483648, "Player not found")); // Return NULLPLAYER requirement
+                    } else {
+                        notMet = checkRequirementsSync(asyncPlayer); // Perform sync checks with API-fetched player
+                    }
+
+                    // Execute callback on the main thread with the result
+                    Bukkit.getScheduler().runTask(MGiveaway.getInstance(), () -> {
+                        callback.accept(notMet);
+                    });
+                }
+            }.runTaskAsynchronously(MGiveaway.getInstance());
         }
+    }
+
+    /**
+     * Helper method to perform synchronous requirement checks given an OfflinePlayer object.
+     * This is reused for both cached and API-fetched players to avoid code duplication.
+     *
+     * @param player The OfflinePlayer to check requirements against.
+     * @return A List of unmet Requirements.
+     */
+    private List<Requirement> checkRequirementsSync(OfflinePlayer player) {
         List<Requirement> notMet = new ArrayList<>();
-        for(Requirement requirement : requirements) {
-            if(!requirement.check(player)) {
+        for (Requirement requirement : requirements) {
+            if (!requirement.check(player)) {
                 notMet.add(requirement);
             }
         }
         return notMet;
-
     }
 
 
@@ -177,8 +219,8 @@ public class Giveaway {
         return prize;
     }
 
-    public String getPrizePlaceholder() {
-        return prizePlaceholder;
+    public String getMinecraftPrize() {
+        return minecraftPrize;
     }
 
     public String getEndTime() {
@@ -298,7 +340,7 @@ public class Giveaway {
                 ", started=" + started +
                 ", entries=" + entryMap +
                 ", prize='" + prize +
-                ", prizePlaceholder='" + prizePlaceholder +
+                ", minecraftPrize='" + minecraftPrize +
                 ", winners=" + (winners != null && !winners.isEmpty() ? String.join(", ", winners) : "null") + '\'' +
                 ", embedId='" + (embedId != null ? embedId : "null") + '\'' +
                 ", requirements=" + requirements +

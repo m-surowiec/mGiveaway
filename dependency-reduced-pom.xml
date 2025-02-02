@@ -34,6 +34,10 @@
             <configuration>
               <relocations>
                 <relocation>
+                  <pattern>com.jeff_media.updatechecker</pattern>
+                  <shadedPattern>me.msuro.mGiveaway</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>org.bstats</pattern>
                   <shadedPattern>me.msuro.mGiveaway</shadedPattern>
                 </relocation>
@@ -47,6 +51,10 @@
     </plugins>
   </build>
   <repositories>
+    <repository>
+      <id>jeff-media-public</id>
+      <url>https://repo.jeff-media.com/public/</url>
+    </repository>
     <repository>
       <id>papermc-repo</id>
       <url>https://repo.papermc.io/repository/maven-public/</url>

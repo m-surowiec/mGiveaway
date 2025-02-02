@@ -33,6 +33,11 @@ public class ConfigUtil {
                 instance.getLogger().info("Config file loaded successfully!");
             }
         }
+        if(getOptional(CONFIG_VERSION) == null) {
+            config.set(CONFIG_VERSION, "0.1");
+            saveConfig();
+        }
+        updateConfig();
 
     }
 
@@ -114,7 +119,7 @@ public class ConfigUtil {
         saveConfig();
     }
 
-    public static boolean createGiveaway(String name, String prize, String prizePlaceholder, String duration, int winners, String command, boolean requirements) {
+    public static boolean createGiveaway(String name, String prize, String minecraftPrize, String duration, int winners, String command, boolean requirements) {
         if(getOptional("giveaways." + name + ".settings.end_time") != null) return false;
         config.createSection("giveaways." + name);
         long durationInSeconds = parseDuration(duration);
@@ -124,7 +129,7 @@ public class ConfigUtil {
         config.set("giveaways." + name + ".settings.commands", List.of(command));
         config.set("giveaways." + name + ".settings.started", false);
         config.set("giveaways." + name + ".settings.prize_formatted", prize);
-        config.set("giveaways." + name + ".settings.prize_placeholder", prizePlaceholder);
+        config.set("giveaways." + name + ".settings.minecraft_prize", minecraftPrize);
 
         if(!requirements) config.set(ConfigUtil.FORCE_START.replace("%s", name), true);
 
@@ -193,7 +198,45 @@ public class ConfigUtil {
         return totalSeconds;
     }
 
+    public static void updateConfig() {
+        String version = getAndValidate(CONFIG_VERSION);
+        if(version.equalsIgnoreCase("0.1") || version.equalsIgnoreCase("0.4")) {
+            // Discord command options description
+            config.set(DISCORD_OPTIONS_NAME, "Name of the giveaway");
+            config.set(DISCORD_OPTIONS_PRIZE, "Formatted name of the prize");
+            config.set(DISCORD_OPTIONS_MINECRAFT_PRIZE, "Prize in Minecraft format (For broadcast message)");
+            config.set(DISCORD_OPTIONS_DURATION, "Duration of the giveaway in `Xmo Xd Xh Xm Xs` format");
+            config.set(DISCORD_OPTIONS_WINNERS, "Number of winners");
+            config.set(DISCORD_OPTIONS_COMMAND, "First command to execute for the players (%player% is the winner's name). If you want to add more commands, use the minecraft config file");
+            config.set(DISCORD_OPTIONS_REQUIREMENTS, "Set to `true` if you want to manually add requirements to the giveaway in the `config.yml` *before* it starts. If `false` or null, the giveaway starts immediately after creation.");
+            // Giveaway join messages
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED, "You have already joined the giveaway as %player%!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED, "This nickname has already joined the giveaway!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_JOINED, "You have joined the giveaway as %player%!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED, "The giveaway has not started yet!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED, "The giveaway has already ended!");
+            // Giveaway command error messages
+            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION, "You don't have permission to use this command!");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED));
+            // Giveaway requirement error messages
+            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER, "**You have never joined the server!**");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET, "**You do not meet the requirements to enter the giveaway!** \n%requirements%");
+            // Giveaway modal messages
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE, "Join Giveaway");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION, "What nickname do you want to submit for the giveaway?");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER, "Your Nickname");
+            // Giveaway button messages
+            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE, "PRIMARY");
+            config.set(MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT, "Join Giveaway");
 
+            config.set(CONFIG_VERSION, "0.5");
+            saveConfig();
+            reloadConfig();
+            instance.getLogger().info("Config updated to version 0.5!");
+        }
+    }
+
+    public static final String CONFIG_VERSION = "config_version";
     public static final String PREFIX = "prefix";
     public static final String BROADCAST_INTERVAL = "broadcast_interval";
     public static final String BROADCAST_MESSAGE = "broadcast_message";
@@ -227,7 +270,7 @@ public class ConfigUtil {
     public static final String COMMANDS = "giveaways.%s.settings.commands";
     public static final String STARTED = "giveaways.%s.settings.started";
     public static final String PRIZE_FORMATTED = "giveaways.%s.settings.prize_formatted";
-    public static final String PRIZE_PLACEHOLDER = "giveaways.%s.settings.prize_placeholder";
+    public static final String MINECRAFT_PRIZE = "giveaways.%s.settings.minecraft_prize";
     public static final String EMBED_ID = "giveaways.%s.settings.embed_id";
     public static final String FORCE_START = "giveaways.%s.settings.forcestart";
     public static final String ENDED = "giveaways.%s.ended";
@@ -237,6 +280,32 @@ public class ConfigUtil {
     public static final String REQUIREMENT_PLACEHOLDER = "giveaways.%s.requirements.placeholder";
     // %t = type, %r = requirement
     public static final String REQUIREMENT_FORMATTED = "giveaways.%s.requirements.%t.%r.formatted";
+
+    public static final String DISCORD_OPTIONS_NAME = "discord.bot.command.options.name";
+    public static final String DISCORD_OPTIONS_PRIZE = "discord.bot.command.options.prize";
+    public static final String DISCORD_OPTIONS_MINECRAFT_PRIZE = "discord.bot.command.options.minecraft_prize";
+    public static final String DISCORD_OPTIONS_DURATION = "discord.bot.command.options.duration";
+    public static final String DISCORD_OPTIONS_WINNERS = "discord.bot.command.options.winners";
+    public static final String DISCORD_OPTIONS_COMMAND = "discord.bot.command.options.command";
+    public static final String DISCORD_OPTIONS_REQUIREMENTS = "discord.bot.command.options.requirements";
+
+    public static final String MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED = "messages.discord.giveaway_join.already_joined";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED = "messages.discord.giveaway_join.nick_already_joined";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_JOIN_JOINED = "messages.discord.giveaway_join.joined";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED = "messages.discord.giveaway_join.not_started";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED = "messages.discord.giveaway_join.already_ended";
+
+    public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION = "messages.discord.giveaway_command_error.no_permission";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED = "messages.discord.giveaway_command_error.plugin_paused";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER = "messages.discord.giveaway_requirement_error.null_player";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET = "messages.discord.giveaway_requirement_error.requirements_not_met";
+
+    public static final String MESSAGES_DISCORD_GIVEAWAY_MODAL_JOIN_MODAL_TITLE = "messages.discord.giveaway_modal.join_modal_title";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_QUESTION = "messages.discord.giveaway_modal.nick_input_question";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_MODAL_NICK_INPUT_PLACEHOLDER = "messages.discord.giveaway_modal.nick_input_placeholder";
+
+    public static final String MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TYPE = "messages.discord.giveaway_button.join_button_type";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_BUTTON_JOIN_BUTTON_TEXT = "messages.discord.giveaway_button.join_button_text";
 
 
 

@@ -36,22 +36,22 @@ public class DiscordListener extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if(!event.getName().equalsIgnoreCase(ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME))) return;
         if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "You don't have permission to use this command!")).setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION))).setEphemeral(true).queue();
             return;
         }
         if(MGiveaway.isPaused()) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
             return;
         }
         String name = event.getOption("name").getAsString();
         String prize = event.getOption("prize").getAsString();
-        String prizePlaceholder = event.getOption("prize_placeholder").getAsString();
+        String minecraftPrize = event.getOption("minecraft_prize").getAsString();
         String duration = event.getOption("duration").getAsString();
         int winners = Math.toIntExact(event.getOption("winners").getAsLong());
         String command = event.getOption("command").getAsString();
         boolean requirements = event.getOption("requirements") != null ? event.getOption("requirements").getAsBoolean() : false;
 
-        if(!ConfigUtil.createGiveaway(name, prize, prizePlaceholder, duration, winners, command, requirements)) {
+        if(!ConfigUtil.createGiveaway(name, prize, minecraftPrize, duration, winners, command, requirements)) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaway with this name already exists!")).setEphemeral(true).queue();
         } else {
             event.replyEmbeds(TextUtil.getReplyEmbed(true, "Giveaway created successfully!")).setEphemeral(true).queue();
@@ -63,21 +63,22 @@ public class DiscordListener extends ListenerAdapter {
         if(!event.getMessage().getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
         if(!event.getComponentId().startsWith("giveaway_")) return;
         if(MGiveaway.isPaused()) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
             return;
         }
         Giveaway giveaway = instance.getGiveaway(event.getComponentId().substring(9));
         if(giveaway == null) return;
         if(giveaway.hasEnded()) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten giveaway już się zakończył!")).setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED))).setEphemeral(true).queue();
             return;
         }
         if(!giveaway.isStarted()) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten giveaway jeszcze się nie zaczął!")).setEphemeral(true).queue();
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED))).setEphemeral(true).queue();
             return;
         }
         if(giveaway.getEntryMap().containsKey(event.getUser().getId())) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Już bierzesz udział w tym giveawayu jako " + giveaway.getEntryMap().get(event.getUser().getId()) + "!")).setEphemeral(true).queue();
+            String msg = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED).replace("%player%", giveaway.getEntryMap().get(event.getUser().getId()));
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, msg)).setEphemeral(true).queue();
             return;
         }
         Modal modal = instance.getDiscordUtil().getJoinForm(giveaway);
@@ -86,40 +87,53 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public void onModalInteraction(@NotNull ModalInteractionEvent event) {
-        if(!Objects.requireNonNull(event.getMessage()).getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId())) return;
-        if(!event.getModalId().startsWith("join_giveaway_")) return;
-        if(MGiveaway.isPaused()) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Giveaways are paused! There's a plugin error!")).setEphemeral(true).queue();
+        if (!Objects.requireNonNull(event.getMessage()).getAuthor().getId().equalsIgnoreCase(instance.getDiscordUtil().getJDA().getSelfUser().getId()))
+            return;
+        if (!event.getModalId().startsWith("join_giveaway_")) return;
+        if (MGiveaway.isPaused()) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
             return;
         }
         Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(14));
-        if(giveaway == null) return;
+        if (giveaway == null) return;
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
-        if(giveaway.getEntryMap().containsValue(nick)) {
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "Ten nick już bierze udział w giveawayu!")).setEphemeral(true).queue();
+        if (giveaway.getEntryMap().containsValue(nick)) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED))).setEphemeral(true).queue();
             return;
         }
-        List<Requirement> requirements = giveaway.checkRequirements(nick);
-        if(!requirements.isEmpty()) {
-            if(requirements.get(0).type() == Requirement.Type.NULLPLAYER) {
-                event.replyEmbeds(TextUtil.getReplyEmbed(false, "**Nie wszedłeś nigdy na serwer!**")).setEphemeral(true).queue();
+        giveaway.checkRequirementsAsync(nick, unmetRequirements -> {
+            if (unmetRequirements == null) {
+                instance.getLogger().warning("Error during asynchronous player lookup for " + nick + " in giveaway " + giveaway.getName());
+                event.replyEmbeds(TextUtil.getReplyEmbed(false, "Error checking requirements. Please try again.")).setEphemeral(true).queue(); // Generic error message
                 return;
             }
-            StringBuilder sb = new StringBuilder();
-            int i = 0;
-            for(Requirement requirement : requirements) {
-                if(requirement.getFormatted() == null || requirement.getFormatted().isEmpty() || requirement.getFormatted().equalsIgnoreCase("null")) continue;
-                if(i < requirements.size() - 1) sb.append(requirement.getFormatted()).append(", ");
-                else sb.append(requirement.getFormatted());
-                i++;
+
+            if (unmetRequirements.isEmpty()) {
+                // Player meets all requirements - proceed with entry
+                giveaway.addEntry(event.getUser().getId(), nick);
+                String msg = ConfigUtil.getAndValidate("messages.discord.giveaway_join.joined").replace("%player%", nick);
+                event.replyEmbeds(TextUtil.getReplyEmbed(true, msg)).setEphemeral(true).queue();
+                ConfigUtil.updateStat(event.getUser().getId(), 1);
+                MessageEmbed embed = instance.getDiscordUtil().getEmbedBuilderFromConfig(giveaway, 1).build();
+                event.getChannel().editMessageEmbedsById(giveaway.getEmbedId(), embed).queue();
+
+            } else {
+                if (unmetRequirements.get(0).type() == Requirement.Type.NULLPLAYER) {
+                    event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER))).setEphemeral(true).queue();
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                int i = 0;
+                for (Requirement requirement : unmetRequirements) {
+                    if (requirement.getFormatted() == null || requirement.getFormatted().isEmpty() || requirement.getFormatted().equalsIgnoreCase("null"))
+                        continue;
+                    if (i < unmetRequirements.size() - 1) sb.append(requirement.getFormatted()).append(", ");
+                    else sb.append(requirement.getFormatted());
+                    i++;
+                }
+                String msg = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET).replace("%requirements%", sb.toString());
+                event.replyEmbeds(TextUtil.getReplyEmbed(false, msg)).setEphemeral(true).queue();
             }
-            event.replyEmbeds(TextUtil.getReplyEmbed(false, "**Nie spełniasz wymagań aby wziąć udział w giveawayu!** \n" + sb)).setEphemeral(true).queue();
-            return;
-        }
-        giveaway.addEntry(event.getUser().getId(), nick);
-        event.replyEmbeds(TextUtil.getReplyEmbed(true, "Zapisano nick! (Nick: " + nick + ")")).setEphemeral(true).queue();
-        ConfigUtil.updateStat(event.getUser().getId(), 1);
-        MessageEmbed embed = instance.getDiscordUtil().getEmbedBuilderFromConfig(giveaway, 1).build();
-        event.getChannel().editMessageEmbedsById(giveaway.getEmbedId(), embed).queue();
+        });
     }
 }

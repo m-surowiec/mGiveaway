@@ -58,11 +58,11 @@ Uses slash commands for easy giveaway creation and button/modal interactions for
 
 Use the configured slash command (default: `/reate_giveaway`) in your Discord server to create a giveaway.
 
-* `/create_giveaway name:<giveaway_name> prize:<prize_description> prize_placeholder:<placeholder_text> duration:<duration_string> winners:<number_of_winners> command:<reward_command> requirements:<true/false>`
+* `/create_giveaway name:<giveaway_name> prize:<prize_description> minecraft_prize:<placeholder_text> duration:<duration_string> winners:<number_of_winners> command:<reward_command> requirements:<true/false>`
 
    * `name`:  The name of the giveaway (used internally, e.g., in config).
    * `prize`:  The formatted description of the prize to display in the Discord embed.
-   * `prize_placeholder`: A short placeholder for the prize used in in-game broadcast messages.
+   * `minecraft_prize`: A short placeholder for the prize used in in-game broadcast messages.
    * `duration`: The giveaway duration (e.g., `1mo 2w 7d 5h 30m`). Units: `mo` (months), `w` (weeks), `d` (days), `h` (hours), `m` (minutes), `s` (seconds).
    * `winners`: The number of winners for the giveaway.
    * `command`: The first command to execute for each winner (use config for multiple commands). Placeholders: `%player%` (winner's Minecraft username).
@@ -77,7 +77,7 @@ See the example giveaway configuration (`giveaways.5Diamonds`) in the `config.ym
 * `settings.winners`: **REQUIRED:** Number of winners.
 * `settings.commands`: **REQUIRED:** List of commands to execute for each winner. Placeholders: `%player%`.
 * `settings.prize_formatted`: **REQUIRED:** Formatted prize description for Discord embed.
-* `settings.prize_placeholder`: **REQUIRED:** Short placeholder for prize in in-game broadcasts.
+* `settings.minecraft_prize`: **REQUIRED:** Short placeholder for prize in in-game broadcasts.
 * `requirements`: (Optional) Define requirements for giveaway entry:
     * `group`:  Role/group based requirements (using Vault).
     * `permission`: Permission-based requirements (using Vault).
