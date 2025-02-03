@@ -198,6 +198,7 @@ public final class MGiveaway extends JavaPlugin {
         }, 120, 20*60);
 
         updateCheck = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            instance.getLogger().info("Checking for updates...");
             new UpdateChecker(this, UpdateCheckSource.GITHUB_RELEASE_TAG, "m-surowiec/mGiveaway")
                     .setNotifyOpsOnJoin(true)
                     .setDownloadLink("https://github.com/m-surowiec/mGiveaway/releases/latest")

@@ -38,7 +38,7 @@ public class TextUtil {
     public static MessageEmbed getReplyEmbed(boolean success, String description) {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setColor(success ? Color.GREEN : Color.RED);
-        builder.setTitle((success ? ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS) : ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR) + "!");
+        builder.setTitle((success ? ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS) : ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR)));
         builder.setDescription(description);
         return builder.build();
     }
