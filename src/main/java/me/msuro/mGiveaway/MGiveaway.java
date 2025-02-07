@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 
 
-
 public final class MGiveaway extends JavaPlugin {
 
     private static MGiveaway instance;
@@ -49,7 +48,7 @@ public final class MGiveaway extends JavaPlugin {
 
     public void addEntry(Giveaway giveaway, HashMap<String, String> entries) {
         HashMap<String, String> entry = MGiveaway.entries.get(giveaway);
-        if(entry == null) {
+        if (entry == null) {
             entry = new HashMap<>();
         }
         entry.putAll(entries);
@@ -102,13 +101,13 @@ public final class MGiveaway extends JavaPlugin {
         getLogger().info("Loading bStats...");
         metrics = new Metrics(this, 24362);
 
-        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().severe("PlaceholderAPI not found or not enabled! Disabling plugin...");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
 
-        if(Bukkit.getPluginManager().getPlugin("Vault") == null || !Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null || !Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             getLogger().severe("Vault not found or not enabled! Disabling plugin...");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -130,27 +129,27 @@ public final class MGiveaway extends JavaPlugin {
 
         discordUtil = new DiscordUtil();
 
-        if(isPaused())
+        if (isPaused())
             return;
 
         discordUtil.build();
 
-        if(isPaused())
+        if (isPaused())
             return;
 
         new DiscordListener();
 
         dbUtils = new DBUtils();
 
-        if(isPaused())
+        if (isPaused())
             return;
 
         getLogger().info("Plugin enabled!");
-        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
-        final int[] n = {interval-1};
+        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL) / 60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL) / 60;
+        final int[] n = {interval - 1};
         String message = ConfigUtil.getAndValidate(ConfigUtil.BROADCAST_MESSAGE);
         updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
-            if(!isPaused()) {
+            if (!isPaused()) {
                 n[0]++;
                 ConfigUtil.reloadConfig();
                 TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
@@ -195,16 +194,16 @@ public final class MGiveaway extends JavaPlugin {
                     }
                 }
             }
-        }, 120, 20*60);
+        }, 120, 20 * 60);
 
         updateCheck = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             getLogger().info("Checking for updates...");
-            new UpdateChecker(this, UpdateCheckSource.GITHUB_RELEASE_TAG, "m-surowiec/mGiveaway")
+            new UpdateChecker(this, UpdateCheckSource.SPIGET, "122302")
                     .setNotifyOpsOnJoin(true)
-                    .setDownloadLink("https://github.com/m-surowiec/mGiveaway/releases/latest")
+                    .setDownloadLink("https://www.spigotmc.org/resources/mgiveaway.122302/")
                     .setColoredConsoleOutput(true)
                     .checkNow();
-        }, 120, 20*60*30);
+        }, 120, 20 * 60 * 30);
     }
 
     @Override
@@ -213,12 +212,12 @@ public final class MGiveaway extends JavaPlugin {
             updateGiveaways.cancel();
         }
 
-        for(Giveaway giveaway : giveaways) {
+        for (Giveaway giveaway : giveaways) {
             dbUtils.saveEntries(giveaway);
         }
 
         try {
-            if(discordUtil == null) return;
+            if (discordUtil == null) return;
             JDA jda = discordUtil.getJDA();
             if (jda == null) return;
             getLogger().info("Shutting down Discord bot...");
@@ -300,7 +299,6 @@ public final class MGiveaway extends JavaPlugin {
      * Completely reloads the plugin.
      * This method is called when the plugin is reloaded.
      * It should be used to reload all the plugin's data.
-     *
      */
     public void reloadPlugin() {
         onDisable();
@@ -321,7 +319,7 @@ public final class MGiveaway extends JavaPlugin {
         TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
 
         getLogger().info("Reloading Discord bot...");
-        if(discordUtil != null && discordUtil.getJDA() != null && discordUtil.getJDA().getStatus() == JDA.Status.CONNECTED) {
+        if (discordUtil != null && discordUtil.getJDA() != null && discordUtil.getJDA().getStatus() == JDA.Status.CONNECTED) {
             discordUtil.getJDA().shutdown();
         }
         discordUtil = new DiscordUtil();
@@ -335,11 +333,11 @@ public final class MGiveaway extends JavaPlugin {
             updateGiveaways.cancel();
             updateGiveaways = null;
         }
-        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL)/60;
-        final int[] n = {interval-1};
+        int interval = ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL) / 60 == 0 ? 1 : ConfigUtil.getInt(ConfigUtil.BROADCAST_INTERVAL) / 60;
+        final int[] n = {interval - 1};
         String message = ConfigUtil.getAndValidate(ConfigUtil.BROADCAST_MESSAGE);
         updateGiveaways = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
-            if(!isPaused()) {
+            if (!isPaused()) {
                 n[0]++;
                 ConfigUtil.reloadConfig();
                 TextUtil.prefix = ConfigUtil.getOrDefault(ConfigUtil.PREFIX);
@@ -384,7 +382,7 @@ public final class MGiveaway extends JavaPlugin {
                     }
                 }
             }
-        }, 120, 20*60);
+        }, 120, 20 * 60);
 
 
         getLogger().info("Reloading plugin complete!");
