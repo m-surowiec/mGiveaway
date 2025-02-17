@@ -17,8 +17,6 @@ public class DiscordCommand extends ListenerAdapter {
         instance.getDiscordUtil().getJDA().addEventListener(this);
         String commandName = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME);
         String commandDesc = ConfigUtil.getAndValidate(ConfigUtil.COMMAND_DESCRIPTION);
-        // v0.5 -> Make command options description configurable
-        // v0.5 -> switch `prize_placeholder` to `minecraft_prize`
         SlashCommandData c = Commands
                 .slash(commandName, commandDesc)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))

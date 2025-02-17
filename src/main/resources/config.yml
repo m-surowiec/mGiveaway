@@ -24,7 +24,7 @@ discord:
         duration: "Duration of the giveaway in `Xmo Xd Xh Xm Xs` format"
         winners: "Number of winners"
         command: "First command to execute (%player% is the winner's nick). You can add more in the config.yml"
-        requirements: "'true' if there will be requirements added, 'false' or null if not (immidiate start)"
+        requirements: "'true' if there will be requirements added, 'false' or null if not (immediate start)"
     # PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
     giveaway_embed: |
       {
