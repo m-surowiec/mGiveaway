@@ -63,7 +63,9 @@
 </p>
 
 Use `/create_giveaway` (default) to create giveaways. 
-```/create_giveaway name:<giveaway_name> prize:<prize_description> minecraft_prize:<minecraft_prize_placeholder> duration:<duration_string> winners:<number_of_winners> command:<reward_command> requirements:<true/false>```*   **name:** **REQUIRED:** Internal giveaway name.
+```/create_giveaway name:<giveaway_name> prize:<prize_description> minecraft_prize:<minecraft_prize_placeholder> duration:<duration_string> winners:<number_of_winners> command:<reward_command> requirements:<true/false>```
+
+*   **name:** **REQUIRED:** Internal giveaway name.
 *   **prize:** **REQUIRED:** Formatted prize description (Discord).
 *   **minecraft_prize:** **REQUIRED:** Plain-text prize (in-game broadcast).
 *   **duration:** **REQUIRED:** Duration string (e.g., `2d 30m`).
