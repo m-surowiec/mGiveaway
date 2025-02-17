@@ -1,5 +1,5 @@
 name: mGiveaway
-version: '0.5.1'
+version: '0.6'
 main: me.msuro.mGiveaway.MGiveaway
 api-version: '1.13'
 authors: [ mSuro_ ]

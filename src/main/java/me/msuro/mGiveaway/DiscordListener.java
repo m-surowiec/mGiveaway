@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Objects;
 
 public class DiscordListener extends ListenerAdapter {
@@ -72,12 +71,12 @@ public class DiscordListener extends ListenerAdapter {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED))).setEphemeral(true).queue();
             return;
         }
-        if(!giveaway.isStarted()) {
+        if(giveaway.state() != Giveaway.State.STARTED) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED))).setEphemeral(true).queue();
             return;
         }
-        if(giveaway.getEntryMap().containsKey(event.getUser().getId())) {
-            String msg = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED).replace("%player%", giveaway.getEntryMap().get(event.getUser().getId()));
+        if(giveaway.entries().containsKey(event.getUser().getId())) {
+            String msg = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED).replace("%player%", giveaway.entries().get(event.getUser().getId()));
             event.replyEmbeds(TextUtil.getReplyEmbed(false, msg)).setEphemeral(true).queue();
             return;
         }
@@ -94,16 +93,34 @@ public class DiscordListener extends ListenerAdapter {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
             return;
         }
-        Giveaway giveaway = new Giveaway(instance).fromConfig(event.getModalId().substring(9));
+        Giveaway giveaway = instance.getGiveaway(event.getModalId().substring(9));
         if (giveaway == null) return;
+        // Check if giveaway has ended
+        if(giveaway.state() == Giveaway.State.ENDED) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_ENDED))).setEphemeral(true).queue();
+            return;
+        }
+        // Check if giveaway has started
+        if(giveaway.state() != Giveaway.State.STARTED) {
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_NOT_STARTED))).setEphemeral(true).queue();
+            return;
+        }
+        // Check if the provided nick is already joined
         String nick = Objects.requireNonNull(event.getValue("nick")).getAsString();
-        if (giveaway.getEntryMap().containsValue(nick)) {
+        if (giveaway.entries().containsValue(nick)) {
             event.replyEmbeds(TextUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_NICK_ALREADY_JOINED))).setEphemeral(true).queue();
             return;
         }
-        giveaway.checkRequirementsAsync(nick, unmetRequirements -> {
+        // Check if this discord user is already joined
+        if(giveaway.entries().containsKey(event.getUser().getId())) {
+            String msg = ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_JOIN_ALREADY_JOINED).replace("%player%", giveaway.entries().get(event.getUser().getId()));
+            event.replyEmbeds(TextUtil.getReplyEmbed(false, msg)).setEphemeral(true).queue();
+            return;
+        }
+        // Check if the player meets the requirements
+        instance.getGiveawayManager().checkRequirementsAsync(giveaway, nick, unmetRequirements -> {
             if (unmetRequirements == null) {
-                instance.getLogger().warning("Error during asynchronous player lookup for " + nick + " in giveaway " + giveaway.getName());
+                instance.getLogger().warning("Error during asynchronous player lookup for " + nick + " in giveaway " + giveaway.name());
                 event.replyEmbeds(TextUtil.getReplyEmbed(false, "Error checking requirements. Please try again.")).setEphemeral(true).queue(); // Generic error message
                 return;
             }
@@ -111,11 +128,12 @@ public class DiscordListener extends ListenerAdapter {
             if (unmetRequirements.isEmpty()) {
                 // Player meets all requirements - proceed with entry
                 giveaway.addEntry(event.getUser().getId(), nick);
+                instance.getGiveawayManager().putGiveaway(giveaway);
                 String msg = ConfigUtil.getAndValidate("messages.discord.giveaway_join.joined").replace("%player%", nick);
                 event.replyEmbeds(TextUtil.getReplyEmbed(true, msg)).setEphemeral(true).queue();
                 ConfigUtil.updateStat(event.getUser().getId(), 1);
                 MessageEmbed embed = instance.getDiscordUtil().getEmbedBuilderFromConfig(giveaway, 1).build();
-                event.getChannel().editMessageEmbedsById(giveaway.getEmbedId(), embed).queue();
+                event.getChannel().editMessageEmbedsById(giveaway.embedId(), embed).queue();
 
             } else {
                 if (unmetRequirements.get(0).type() == Requirement.Type.NULLPLAYER) {
