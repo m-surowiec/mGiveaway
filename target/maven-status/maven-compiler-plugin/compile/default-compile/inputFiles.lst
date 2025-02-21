@@ -1,11 +1,11 @@
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/DiscordCommand.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/DiscordListener.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/Giveaway.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/MGiveaway.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/PlayerListener.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/UpdateListener.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/classes/Giveaway.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/classes/Requirement.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/Requirement.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/UpdateChecker.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/commands/Reload.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/discord/DiscordCommand.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/discord/DiscordListener.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/listener/PlayerListener.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/ConfigUtil.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/DBUtils.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/DiscordUtil.java

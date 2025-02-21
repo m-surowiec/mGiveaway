@@ -1,14 +1,13 @@
 package me.msuro.mGiveaway.utils;
 
 import me.msuro.mGiveaway.MGiveaway;
-import me.msuro.mGiveaway.classes.Giveaway;
-import me.msuro.mGiveaway.classes.Requirement;
+import me.msuro.mGiveaway.Giveaway;
+import me.msuro.mGiveaway.Requirement;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -260,7 +259,14 @@ public class GiveawayManager {
             return;
         }
 
-        OfflinePlayer player = MGiveaway.getInstance().getServer().getOfflinePlayerIfCached(username);
+        OfflinePlayer player = null;
+        try {
+            Class.forName("com.destroystokyo.paper.PaperConfig");
+            player = MGiveaway.getInstance().getServer().getOfflinePlayerIfCached(username);
+        } catch (ClassNotFoundException e) {
+            player = Bukkit.getOfflinePlayer(username);
+        }
+
         if (player != null) {
             // Player is cached, perform synchronous checks and callback immediately on main thread
             List<Requirement> notMet = checkRequirementsSync(giveaway, player); // Helper method for sync checks

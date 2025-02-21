@@ -1,4 +1,4 @@
-package me.msuro.mGiveaway.classes;
+package me.msuro.mGiveaway;
 
 import me.msuro.mGiveaway.utils.ConfigUtil;
 
@@ -11,16 +11,16 @@ import java.util.List;
 public record Giveaway(
         String                  name,            // REQUIRED - The unique internal name of the giveaway.
         String                  prize,           // REQUIRED - The formatted prize description (for Discord embeds).
-        String                  minecraftPrize,  // REQUIRED - The short, plain-text prize description (for in-game broadcasts).
-        String                  endTime,         // REQUIRED - The end date/time string (in "dd/MM/yyyy HH:mm:ss" format).
+        String                  minecraftPrize,// REQUIRED - The short, plain-text prize description (for in-game broadcasts).
+        String                  endTime,// REQUIRED - The end date/time string (in "dd/MM/yyyy HH:mm:ss" format).
         LocalDateTime           endTimeParsed,   // REQUIRED - The parsed end date/time.
-        String                  startTime,       // OPTIONAL - The scheduled start date/time string (in "dd/MM/yyyy HH:mm:ss" format).  Null if starts immediately.
+        String                  startTime,// OPTIONAL - The scheduled start date/time string (in "dd/MM/yyyy HH:mm:ss" format).  Null if starts immediately.
         LocalDateTime           startTimeParsed, // OPTIONAL - The parsed start date/time. Null if starts immediately.
         Integer                 winCount,        // REQUIRED - The number of winners.
-        String                  embedId,         // OPTIONAL - The Discord message ID of the giveaway embed. Null initially.
-        State                   state,           // REQUIRED - The current state of the giveaway (PENDING, STARTED, ENDED).
-        HashMap<String, String> entries,         // REQUIRED - A map of Discord user IDs to Minecraft usernames (entries).
-        List<String>            prizeCommands,   // REQUIRED - A list of RewardCommand objects (command + execution mode).
+        String                  embedId,// OPTIONAL - The Discord message ID of the giveaway embed. Null initially.
+        State                   state,// REQUIRED - The current state of the giveaway (PENDING, STARTED, ENDED).
+        HashMap<String, String> entries,// REQUIRED - A map of Discord user IDs to Minecraft usernames (entries).
+        List<String>            prizeCommands,// REQUIRED - A list of RewardCommand objects (command + execution mode).
         HashMap<String, String> winners,         // OPTIONAL - A list of winner Discord user IDs.  Empty initially.
         List<Requirement>       requirements     // REQUIRED - A list of entry requirements.
         ) {

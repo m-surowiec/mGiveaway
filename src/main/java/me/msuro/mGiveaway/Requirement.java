@@ -1,7 +1,6 @@
-package me.msuro.mGiveaway.classes;
+package me.msuro.mGiveaway;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.msuro.mGiveaway.MGiveaway;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 

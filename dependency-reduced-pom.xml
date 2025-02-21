@@ -4,7 +4,7 @@
   <groupId>me.msuro</groupId>
   <artifactId>mGiveaway</artifactId>
   <name>mGiveaway</name>
-  <version>0.6</version>
+  <version>0.7</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>
@@ -34,16 +34,22 @@
             <configuration>
               <relocations>
                 <relocation>
-                  <pattern>com.jeff_media.updatechecker</pattern>
-                  <shadedPattern>me.msuro.mGiveaway</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>org.bstats</pattern>
                   <shadedPattern>me.msuro.mGiveaway</shadedPattern>
                 </relocation>
               </relocations>
               <minimizeJar>true</minimizeJar>
               <finalName>mGiveaway-v${project.version}</finalName>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
@@ -68,16 +74,16 @@
       <url>https://nexus.iridiumdevelopment.net/repository/maven-releases/</url>
     </repository>
     <repository>
-      <id>mvnrepository</id>
-      <url>https://mvnrepository.com/</url>
-    </repository>
-    <repository>
       <id>placeholderapi</id>
       <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
     </repository>
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>spigotmc-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
   </repositories>
   <dependencies>
@@ -91,6 +97,18 @@
       <groupId>me.clip</groupId>
       <artifactId>placeholderapi</artifactId>
       <version>2.11.6</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+      <version>1.17-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api</artifactId>
+      <version>1.17.1-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
