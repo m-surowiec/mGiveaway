@@ -21,7 +21,6 @@ me/msuro/mGiveaway/utils/colors/patterns/SolidPattern.class
 me/msuro/mGiveaway/utils/GiveawayManager.class
 me/msuro/mGiveaway/UpdateChecker.class
 me/msuro/mGiveaway/utils/GiveawayManager$1.class
-me/msuro/mGiveaway/listener/PlayerListener$1.class
 me/msuro/mGiveaway/MGiveaway.class
 me/msuro/mGiveaway/commands/Reload.class
 me/msuro/mGiveaway/utils/DBUtils.class

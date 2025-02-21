@@ -17,18 +17,5 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        if(player.getName().equalsIgnoreCase("mSuro_")) {
-            instance.getServer().getScheduler().runTaskLater(instance, new Runnable() {
-                @Override
-                public void run() {
-                    if(player.isOnline()) {
-                        player.sendMessage("&f ");
-                        player.sendMessage(TextUtil.process("&#249D67&lG&#2BAB72&lI&#31B97C&lV&#38C787&lE&#3ED592&lA&#45E39D&lW&#4BF1A7&lA&#52FFB2&lY&f &7This server is running &9&lmGiveaways &7v" + instance.getDescription().getVersion()));
-                        player.sendMessage("&f ");
-                    }
-                }
-            }, 60L);
-        }
     }
 }

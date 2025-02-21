@@ -44,6 +44,16 @@
               </relocations>
               <minimizeJar>true</minimizeJar>
               <finalName>mGiveaway-v${project.version}</finalName>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
@@ -68,10 +78,6 @@
       <url>https://nexus.iridiumdevelopment.net/repository/maven-releases/</url>
     </repository>
     <repository>
-      <id>mvnrepository</id>
-      <url>https://mvnrepository.com/</url>
-    </repository>
-    <repository>
       <id>placeholderapi</id>
       <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
     </repository>
@@ -80,7 +86,7 @@
       <url>https://jitpack.io</url>
     </repository>
     <repository>
-      <id>spigot-repo</id>
+      <id>spigotmc-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
   </repositories>

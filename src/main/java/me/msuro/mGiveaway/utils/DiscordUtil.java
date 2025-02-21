@@ -265,7 +265,7 @@ public class DiscordUtil {
 
     public void sendGiveawayEndEmbed(Giveaway giveaway, HashMap<String, String> winners) {
         EmbedBuilder eb = getEmbedBuilderFromConfig(giveaway, 2);
-        StringBuilder sb = new StringBuilder(" ");
+        StringBuilder sb = new StringBuilder();
         for (String winner : winners.keySet()) {
             sb.append("<@").append(winner).append("> ");
         }
@@ -273,7 +273,7 @@ public class DiscordUtil {
         if (tc != null) {
             Message embed = tc.retrieveMessageById(giveaway.embedId()).complete();
             embed.replyEmbeds(eb.build()).queue();
-            if(!sb.isEmpty()) {
+            if(!sb.toString().isEmpty()) {
                 String id = tc.sendMessage(sb.toString()).complete().getId();
                 tc.deleteMessageById(id).queue();
             }

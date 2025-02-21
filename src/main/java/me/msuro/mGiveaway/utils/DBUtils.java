@@ -28,7 +28,7 @@ public class DBUtils {
             if (statement == null || statement.isClosed()) {
                 MGiveaway.setPaused(true);
                 instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
-                throw new RuntimeException("Failed to create database file!");
+                throw new RuntimeException("Failed to create database file!", new SQLException("Statement is null or closed!"));
             }
 
         } catch (SQLException e) {
@@ -68,6 +68,7 @@ public class DBUtils {
 
     public HashMap<String, String> refreshEntries(Giveaway giveaway) {
         HashMap<String, String> entries = new HashMap<>();
+        createGiveawayTable(giveaway.name());
         try (Connection conn = getConnection(); Statement statement = conn.createStatement()) {
             statement.execute("SELECT * FROM `entries-" + giveaway.name() + "`;");
             ResultSet resultSet = statement.getResultSet();
