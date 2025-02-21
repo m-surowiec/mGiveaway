@@ -112,9 +112,11 @@ public final class MGiveaway extends JavaPlugin {
                         if (result.requiresUpdate()) {
                             this.getLogger().info(String.format("An update is available! mGiveaways %s may be downloaded on SpigotMC", result.getNewestVersion()));
                             for (Player p : Bukkit.getOnlinePlayers()) {
-                                if (p.isOp()) {
-                                    p.sendMessage(TextUtil.process("&fAn update is available! mGiveaways &7" + result.getNewestVersion() + " &fmay be downloaded on &e&lSpigotMC"));
-                                }
+                                Bukkit.getScheduler().runTask(this, () -> {
+                                    if (p.isOp()) {
+                                        p.sendMessage(TextUtil.process("&fAn update is available! mGiveaways &7" + result.getNewestVersion() + " &fmay be downloaded on &e&lSpigotMC"));
+                                    }
+                                });
                             }
                             return;
                         }

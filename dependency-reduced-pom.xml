@@ -34,10 +34,6 @@
             <configuration>
               <relocations>
                 <relocation>
-                  <pattern>com.jeff_media.updatechecker</pattern>
-                  <shadedPattern>me.msuro.mGiveaway</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>org.bstats</pattern>
                   <shadedPattern>me.msuro.mGiveaway</shadedPattern>
                 </relocation>
