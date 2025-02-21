@@ -1,7 +1,8 @@
-package me.msuro.mGiveaway;
+package me.msuro.mGiveaway.discord;
 
-import me.msuro.mGiveaway.classes.Giveaway;
-import me.msuro.mGiveaway.classes.Requirement;
+import me.msuro.mGiveaway.Giveaway;
+import me.msuro.mGiveaway.MGiveaway;
+import me.msuro.mGiveaway.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.Permission;

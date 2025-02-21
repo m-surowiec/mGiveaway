@@ -1,5 +1,6 @@
-package me.msuro.mGiveaway;
+package me.msuro.mGiveaway.listener;
 
+import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.TextUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

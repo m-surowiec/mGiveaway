@@ -1,7 +1,7 @@
 package me.msuro.mGiveaway.utils;
 
 import me.msuro.mGiveaway.MGiveaway;
-import me.msuro.mGiveaway.classes.Giveaway;
+import me.msuro.mGiveaway.Giveaway;
 import me.msuro.mGiveaway.utils.colors.ColorAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;

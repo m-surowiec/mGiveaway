@@ -1,5 +1,6 @@
-package me.msuro.mGiveaway;
+package me.msuro.mGiveaway.discord;
 
+import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;

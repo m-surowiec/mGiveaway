@@ -1,9 +1,8 @@
 package me.msuro.mGiveaway;
 
-import com.jeff_media.updatechecker.UpdateCheckSource;
-import com.jeff_media.updatechecker.UpdateChecker;
-import me.msuro.mGiveaway.classes.Giveaway;
 import me.msuro.mGiveaway.commands.Reload;
+import me.msuro.mGiveaway.discord.DiscordListener;
+import me.msuro.mGiveaway.listener.PlayerListener;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DBUtils;
 import me.msuro.mGiveaway.utils.DiscordUtil;
@@ -12,13 +11,17 @@ import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.JDA;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
 
 public final class MGiveaway extends JavaPlugin {
 
@@ -37,45 +40,16 @@ public final class MGiveaway extends JavaPlugin {
         instance = this;
         getLogger().info("Enabling plugin...");
 
-        // Check Java Version (Minimum Java 17)
-        String javaVersion = System.getProperty("java.version");
-        String[] versionParts = javaVersion.split("\\.");
-        int majorVersion;
-        try {
-            majorVersion = Integer.parseInt(versionParts[0]);
-            if (majorVersion < 17) {
-                getLogger().severe("--------------------------------------------------");
-                getLogger().severe("mGiveaway Plugin Error: Incompatible Java Version");
-                getLogger().severe("Your server is running Java " + javaVersion + ". ");
-                getLogger().severe("mGiveaway requires Java 17 or higher to run.");
-                getLogger().severe("Please update your server's Java version to 17 or later.");
-                getLogger().severe("Disabling mGiveaway plugin.");
-                getLogger().severe("--------------------------------------------------");
-                Bukkit.getPluginManager().disablePlugin(this);
-                return;
-            }
-        } catch (NumberFormatException e) {
-            getLogger().warning("Could not parse Java version string: " + javaVersion + ". Java version check may be inaccurate.");
-        }
-
         try {
             Class.forName("com.destroystokyo.paper.PaperConfig");
         } catch (ClassNotFoundException e) {
-            getLogger().severe("--------------------------------------------------");
-            getLogger().severe("mGiveaway Plugin Error: Paper Server Required");
-            getLogger().severe("mGiveaway is designed for Paper servers (1.17+).");
-            getLogger().severe("It appears your server is NOT running Paper.");
-            getLogger().severe("Please use a Paper server version 1.17 or higher.");
-            getLogger().severe("Functionality is NOT guaranteed on Spigot or Bukkit.");
-            getLogger().severe("Disabling mGiveaway plugin.");
-            getLogger().severe("--------------------------------------------------");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
+            getLogger().warning("This plugin runs better on Paper. Consider switching to Paper for best performance.");
         }
 
         getLogger().info("Loading bStats...");
         metrics = new Metrics(this, 24362);
 
+        // --- Check for PlaceholderAPI and Vault ---
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null || !Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().severe("PlaceholderAPI not found or not enabled! Disabling plugin...");
             Bukkit.getPluginManager().disablePlugin(this);
@@ -99,7 +73,6 @@ public final class MGiveaway extends JavaPlugin {
         // --- Initialize GiveawayManager and other components ---
         giveawayManager = new GiveawayManager();
         new PlayerListener();
-        new UpdateListener();
         new Reload();
         new ConfigUtil();
         TextUtil.setInstance(this);
@@ -123,13 +96,41 @@ public final class MGiveaway extends JavaPlugin {
 
         getLogger().info("Plugin enabled!");
 
+        metrics.addCustomChart(new SingleLineChart("active-giveaways", new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                // (This is useless as there is already a player chart by default.)
+                return giveawayManager.listGiveaways().size();
+            }
+        }));
+
         // --- Asynchronous Tasks (updateGiveaways and updateCheck) ---
         resetUpdateGiveaways();
-        new UpdateChecker(this, UpdateCheckSource.SPIGET, "122302")
-                .setDownloadLink("https://www.spigotmc.org/resources/mgiveaway.122302/")
-                .setNotifyRequesters(false)
-                .checkNow()
-                .checkEveryXHours(1);
+        updateCheck = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            UpdateChecker.init(this, 122302).requestUpdateCheck().whenComplete((result, e) -> {
+                        this.getLogger().info("Checking for updates...");
+                        if (result.requiresUpdate()) {
+                            this.getLogger().info(String.format("An update is available! mGiveaways %s may be downloaded on SpigotMC", result.getNewestVersion()));
+                            for (Player p : Bukkit.getOnlinePlayers()) {
+                                if (p.isOp()) {
+                                    p.sendMessage(TextUtil.process("&fAn update is available! mGiveaways &7" + result.getNewestVersion() + " &fmay be downloaded on &e&lSpigotMC"));
+                                }
+                            }
+                            return;
+                        }
+
+                        UpdateChecker.UpdateReason reason = result.getReason();
+                        if (reason == UpdateChecker.UpdateReason.UP_TO_DATE) {
+                            this.getLogger().info(String.format("Your version of mGiveaways (%s) is up to date!", result.getNewestVersion()));
+                        } else if (reason == UpdateChecker.UpdateReason.UNRELEASED_VERSION) {
+                            this.getLogger().info(String.format("Your version of mGiveaways (%s) is more recent than the one publicly available. Are you on a development build?", result.getNewestVersion()));
+                        } else {
+                            this.getLogger().warning("Could not check for a new version of mGiveaways. Reason: " + reason);
+                        }
+                    }
+            );
+        }, 120, 20 * 60 * 60);
+
     }
 
 
@@ -139,8 +140,12 @@ public final class MGiveaway extends JavaPlugin {
             updateGiveaways.cancel();
         }
 
+        if (updateCheck != null && !updateCheck.isCancelled()) {
+            updateCheck.cancel();
+        }
+
         // Save entries for all giveaways (using GiveawayManager)
-        if(giveawayManager != null){
+        if (giveawayManager != null) {
             for (Giveaway giveaway : giveawayManager.listGiveaways().values()) {
                 dbUtils.saveEntries(giveaway);
             }
@@ -198,6 +203,7 @@ public final class MGiveaway extends JavaPlugin {
     public static void setPaused(boolean paused) {
         pausePlugin = paused;
     }
+
     public void reloadPlugin() {
         onDisable();
 
