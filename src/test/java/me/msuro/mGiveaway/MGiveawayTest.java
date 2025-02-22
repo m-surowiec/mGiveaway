@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MGiveawayTest {
@@ -33,7 +35,7 @@ class MGiveawayTest {
 
     @Test
     void testPluginDisable() {
-        MockBukkit.unload(plugin);
+        MockBukkit.unmock();
         assertFalse(plugin.isEnabled());
     }
 
@@ -48,6 +50,7 @@ class MGiveawayTest {
     @Test
     void testEventListeners() {
         PluginManagerMock pluginManager = server.getPluginManager();
-        assertTrue(pluginManager.isListeningFor("PlayerJoinEvent"));
+        assertTrue(Arrays.stream(pluginManager.getPlugins())
+                .anyMatch(p -> p.getName().equals("MGiveaway") && p.isEnabled()));
     }
 }

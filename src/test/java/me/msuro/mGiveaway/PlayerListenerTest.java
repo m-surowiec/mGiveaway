@@ -1,6 +1,7 @@
 package me.msuro.mGiveaway;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
+import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import me.msuro.mGiveaway.listener.PlayerListener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -15,12 +16,14 @@ public class PlayerListenerTest {
 
     private MGiveaway plugin;
     private PlayerMock player;
+    private ServerMock server;
 
     @BeforeEach
     public void setUp() {
         MockBukkit.mock();
+        server = MockBukkit.getMock();
         plugin = MockBukkit.load(MGiveaway.class);
-        player = new PlayerMock(server, "TestPlayer");
+        player = new PlayerMock(server , "player");
     }
 
     @AfterEach

@@ -1,6 +1,9 @@
 package me.msuro.mGiveaway;
 
+import me.msuro.mGiveaway.utils.TextUtil;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 

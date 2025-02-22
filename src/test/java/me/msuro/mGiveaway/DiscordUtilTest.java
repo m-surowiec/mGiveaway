@@ -1,5 +1,7 @@
 package me.msuro.mGiveaway;
 
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.managers.Presence;
 import be.seeseemelk.mockbukkit.MockBukkit;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.DiscordUtil;
@@ -35,7 +37,7 @@ public class DiscordUtilTest {
         textChannel = mock(TextChannel.class);
         when(jda.getTextChannelById(anyString())).thenReturn(textChannel);
         when(jda.getGuildById(anyString())).thenReturn(guild);
-        when(jda.getPresence()).thenReturn(mock(JDA.Presence.class));
+        when(jda.getPresence()).thenReturn(mock(Presence.class));
     }
 
     @AfterEach
@@ -59,7 +61,7 @@ public class DiscordUtilTest {
     @Test
     public void testStatusUpdate() {
         discordUtil.build();
-        discordUtil.getJDA().getPresence().setStatus(JDA.Status.IDLE);
-        assertEquals(JDA.Status.IDLE, discordUtil.getJDA().getPresence().getStatus());
+        discordUtil.getJDA().getPresence().setStatus(OnlineStatus.IDLE);
+        assertEquals(OnlineStatus.IDLE, discordUtil.getJDA().getPresence().getStatus());
     }
 }
