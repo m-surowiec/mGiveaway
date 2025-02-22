@@ -17,6 +17,7 @@ me/msuro/mGiveaway/utils/colors/patterns/Pattern.class
 me/msuro/mGiveaway/UpdateChecker$VersionScheme.class
 me/msuro/mGiveaway/discord/DiscordCommand.class
 me/msuro/mGiveaway/Requirement$1.class
+me/msuro/mGiveaway/utils/EmbedUtil.class
 me/msuro/mGiveaway/utils/colors/patterns/SolidPattern.class
 me/msuro/mGiveaway/utils/GiveawayManager.class
 me/msuro/mGiveaway/UpdateChecker.class
