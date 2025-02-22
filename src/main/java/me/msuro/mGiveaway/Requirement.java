@@ -25,6 +25,12 @@ public record Requirement(String value, Requirement.Type type, boolean hasToBe, 
         if (p == null) {
             throw new IllegalArgumentException("Player cannot be null");
         }
+        if(type == Type.NULLPLAYER) {
+            return true;
+        }
+        if(value == null || type == null) {
+            throw new IllegalArgumentException("Value and type cannot be null");
+        }
         Permission perms = MGiveaway.getInstance().getPerms();
         switch (type) {
             case PERMISSION:

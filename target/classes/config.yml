@@ -125,6 +125,7 @@ messages:
       already_ended: "The giveaway has already ended!"
     giveaway_command_error:
       no_permission: "You don't have permission to use this command!"
+      missing_required_args: "Error creating giveaway! Missing required options."
       plugin_paused: "Giveaways are paused! There's a plugin error!"
     giveaway_requirement_error:
       null_player: "**You have never joined the server!**"
@@ -140,6 +141,8 @@ messages:
       join_button_emoji: "🎉"
   in_game:
     no_permission: "%prefix% &cYou don't have permission to use this command!"
+    update_available: "%prefix% &fYou're running an old version! &7%new_version% &fis available on &#52FFB2&lModrinth"
+    update_available_hover: "&7&8&n&oClick to open the mGiveaway page on Modrinth"
 
 
 
@@ -184,4 +187,4 @@ giveaways:
         mcgramy-giveaway: true
 
 # DO NOT EDIT THIS VALUE
-config_version: 0.5
+config_version: 0.7
