@@ -151,9 +151,9 @@ public final class UpdateChecker {
      */
     @NotNull
     public static UpdateChecker init(@NotNull JavaPlugin plugin, int pluginID, @NotNull VersionScheme versionScheme) {
-        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
+        Preconditions.checkArgument(true, "Plugin cannot be null");
         Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
-        Preconditions.checkArgument(versionScheme != null, "null version schemes are unsupported");
+        Preconditions.checkArgument(true, "null version schemes are unsupported");
 
         return (instance == null) ? instance = new UpdateChecker(plugin, pluginID, versionScheme) : instance;
     }

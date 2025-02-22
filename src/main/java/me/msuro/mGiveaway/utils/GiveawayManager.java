@@ -5,6 +5,7 @@ import me.msuro.mGiveaway.Giveaway;
 import me.msuro.mGiveaway.Requirement;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandException;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,7 +19,7 @@ public class GiveawayManager {
 
     private final MGiveaway instance;
     // Giveaway name -> Giveaway object
-    private HashMap<String, Giveaway> giveaways = new HashMap<>();
+    private final HashMap<String, Giveaway> giveaways = new HashMap<>();
 
     public GiveawayManager() {
         this.instance = MGiveaway.getInstance();
@@ -26,7 +27,7 @@ public class GiveawayManager {
 
     public void startGiveaway(Giveaway giveaway) {
         giveaway = giveaway.withState(Giveaway.State.STARTED);
-        String id = instance.getDiscordUtil().sendGiveawayEmbed(giveaway);
+        String id = EmbedUtil.sendGiveawayEmbed(giveaway);
         giveaway = giveaway.withEmbedId(id);
         ConfigUtil.getConfig().set(ConfigUtil.STARTED.replace("%s", giveaway.name()), true);
         ConfigUtil.getConfig().set(ConfigUtil.EMBED_ID.replace("%s", giveaway.name()), id);
@@ -39,8 +40,8 @@ public class GiveawayManager {
         HashMap<String, String> winners = drawWinners(giveaway);
         giveaway = giveaway.withState(Giveaway.State.ENDED);
         giveaway = giveaway.withWinners(winners);
-        instance.getDiscordUtil().sendGiveawayEndEmbed(giveaway, winners);
-        TextUtil.sendLogEmbed(giveaway);
+        EmbedUtil.sendGiveawayEndEmbed(giveaway, winners);
+        EmbedUtil.sendLogEmbed(giveaway);
         ConfigUtil.getConfig().set(ConfigUtil.ENDED.replace("%s", giveaway.name()), true);
         ConfigUtil.saveConfig();
         putGiveaway(giveaway);
@@ -48,7 +49,11 @@ public class GiveawayManager {
         instance.getServer().getScheduler().runTask(instance, () -> {
             for(String value : winners.values()) {
                 for(String command : commands) {
-                    instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", value));
+                    try {
+                        instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", value));
+                    } catch (CommandException e) {
+                        throw new CommandException("Error executing command: " + command + " for player: " + value, e);
+                    }
                 }
             }
         });
@@ -58,14 +63,13 @@ public class GiveawayManager {
 
     /**
      * Adds a new giveaway to the manager. Used for adding new giveaways and editing those that already exist. (for example when a new entry is added)
+     *
      * @param giveaway The giveaway to add.
      *                 If a giveaway with the same name already exists, it will be replaced.
      *                 If the giveaway is new, it will be added.
-     * @return The updated map of giveaways.
      */
-    public HashMap<String, Giveaway> putGiveaway(Giveaway giveaway) {
+    public void putGiveaway(Giveaway giveaway) {
         giveaways.put(giveaway.name(), giveaway);
-        return giveaways;
     }
 
     public void editEntry() {
@@ -103,7 +107,7 @@ public class GiveawayManager {
     }
 
     public HashMap<String, Giveaway> listGiveaways() {
-        if(giveaways == null || giveaways.isEmpty()) {
+        if(giveaways.isEmpty()) {
             fetchGiveaways();
         }
         return giveaways;

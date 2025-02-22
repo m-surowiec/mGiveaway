@@ -227,9 +227,10 @@ public class ConfigUtil {
         return totalSeconds;
     }
 
+
     public static void updateConfig() {
         String version = getAndValidate(CONFIG_VERSION);
-        if (version.equalsIgnoreCase("0.1") || version.equalsIgnoreCase("0.4")) {
+        if(isLowerThan(version, "0.5")) {
             // Discord command options description
             config.set(DISCORD_OPTIONS_NAME, getOrDefault(DISCORD_OPTIONS_NAME));
             config.set(DISCORD_OPTIONS_PRIZE, getOrDefault(DISCORD_OPTIONS_PRIZE));
@@ -272,6 +273,63 @@ public class ConfigUtil {
             reloadConfig();
             instance.getLogger().info("Config updated to version 0.5!");
         }
+        if(isLowerThan(version, "0.7")) {
+            config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS));
+            config.set(UPDATE_AVAILABLE, getOrDefault(UPDATE_AVAILABLE));
+            config.set(UPDATE_AVAILABLE_HOVER, getOrDefault(UPDATE_AVAILABLE_HOVER));
+            config.set(CONFIG_VERSION, "0.7");
+            saveConfig();
+            reloadConfig();
+            instance.getLogger().info("Config updated to version 0.7!");
+        }
+     }
+
+    /**
+     * Compares two version strings to determine if the configVersion is lower than the currentVersion.
+     * Version strings are expected to be in the format "major.minor.patch" or similar,
+     * where parts are separated by dots.
+     * <p>
+     * The comparison is performed part by part, from left to right. If a version string has fewer parts
+     * than the other, the missing parts are treated as 0.
+     * For example:
+     * <ul>
+     *     <li>"0.5" is lower than "0.6"</li>
+     *     <li>"0.6" is lower than "0.6.1"</li>
+     *     <li>"0.5" is lower than "0.5.1"</li>
+     *     <li>"0.5.1" is NOT lower than "0.5"</li>
+     *     <li>"1.0" is NOT lower than "0.9"</li>
+     *     <li>"0.9" is lower than "1.0"</li>
+     * </ul>
+     *
+     * @param configVersion  The version string to compare against the current version.
+     * @param currentVersion The current version string.
+     * @return {@code true} if the {@code configVersion} is lower than the {@code currentVersion}, {@code false} otherwise.
+     *         Returns {@code false} if the versions are equal or if the {@code configVersion} is higher.
+     * @throws NumberFormatException if any version part is not a valid integer.
+     */
+    public static boolean isLowerThan(String configVersion, String currentVersion) {
+        String[] configVersionParts = configVersion.split("\\.");
+        String[] currentVersionParts = currentVersion.split("\\.");
+
+        int length = Math.max(configVersionParts.length, currentVersionParts.length);
+        for (int i = 0; i < length; i++) {
+            int configVersionPart = 0;
+            if (i < configVersionParts.length) {
+                configVersionPart = Integer.parseInt(configVersionParts[i]);
+            }
+
+            int currentVersionPart = 0;
+            if (i < currentVersionParts.length) {
+                currentVersionPart = Integer.parseInt(currentVersionParts[i]);
+            }
+
+            if (configVersionPart < currentVersionPart) {
+                return true;
+            } else if (configVersionPart > currentVersionPart) {
+                return false;
+            }
+        }
+        return false;
     }
 
     public static final String CONFIG_VERSION = "config_version";
@@ -280,6 +338,10 @@ public class ConfigUtil {
     public static final String BROADCAST_MESSAGE = "broadcast_message";
 
     public static final String TOKEN = "discord.bot.token";
+
+    public static final String UPDATE_AVAILABLE = "messages.in_game.update_available";
+    public static final String UPDATE_AVAILABLE_HOVER = "messages.in_game.update_available_hover";
+
 
     public static final String GIVEAWAY_EMBED = "discord.bot.giveaway_embed";
     public static final String GIVEAWAY_END_EMBED = "discord.bot.giveaway_end_embed";
@@ -332,6 +394,7 @@ public class ConfigUtil {
 
     public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION = "messages.discord.giveaway_command_error.no_permission";
     public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED = "messages.discord.giveaway_command_error.plugin_paused";
+    public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS = "messages.discord.giveaway_command_error.missing_required_args";
     public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER = "messages.discord.giveaway_requirement_error.null_player";
     public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET = "messages.discord.giveaway_requirement_error.requirements_not_met";
 

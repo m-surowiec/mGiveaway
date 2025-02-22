@@ -9,9 +9,9 @@ import me.msuro.mGiveaway.utils.DiscordUtil;
 import me.msuro.mGiveaway.utils.GiveawayManager;
 import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.JDA;
+import net.md_5.bungee.api.chat.*;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
-import org.bstats.charts.CustomChart;
 import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 
@@ -112,11 +113,28 @@ public final class MGiveaway extends JavaPlugin {
             UpdateChecker.init(this, 122302).requestUpdateCheck().whenComplete((result, e) -> {
                         this.getLogger().info("Checking for updates...");
                         if (result.requiresUpdate()) {
-                            this.getLogger().info(String.format("An update is available! mGiveaways %s may be downloaded on SpigotMC", result.getNewestVersion()));
+                            BaseComponent[] message = TextComponent.fromLegacyText(
+                                    TextUtil.toMinecraftHex(
+                                            TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.UPDATE_AVAILABLE)))
+                                            .replace("%current_version%", instance.getDescription().getVersion())
+                                            .replace("%new_version%", result.getNewestVersion()));
+
+                            // Attach the click and hover events to each component.
+                            for (BaseComponent component : message) {
+                                component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/plugin/mGiveaway"));
+                                component.setHoverEvent(new HoverEvent(
+                                        HoverEvent.Action.SHOW_TEXT,
+                                        TextComponent.fromLegacyText(
+                                                TextUtil.toMinecraftHex(
+                                                        TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.UPDATE_AVAILABLE_HOVER)))
+                                                        .replace("%new_version%", result.getNewestVersion()))));
+                            }
+
+                            this.getServer().getConsoleSender().spigot().sendMessage(message);
                             for (Player p : Bukkit.getOnlinePlayers()) {
                                 Bukkit.getScheduler().runTask(this, () -> {
                                     if (p.isOp()) {
-                                        p.sendMessage(TextUtil.process("&fAn update is available! mGiveaways &7" + result.getNewestVersion() + " &fmay be downloaded on &e&lSpigotMC"));
+                                        p.spigot().sendMessage(message);
                                     }
                                 });
                             }
@@ -125,11 +143,11 @@ public final class MGiveaway extends JavaPlugin {
 
                         UpdateChecker.UpdateReason reason = result.getReason();
                         if (reason == UpdateChecker.UpdateReason.UP_TO_DATE) {
-                            this.getLogger().info(String.format("Your version of mGiveaways (%s) is up to date!", result.getNewestVersion()));
+                            this.getLogger().info(String.format("Your version of mGiveaway (%s) is up to date!", result.getNewestVersion()));
                         } else if (reason == UpdateChecker.UpdateReason.UNRELEASED_VERSION) {
-                            this.getLogger().info(String.format("Your version of mGiveaways (%s) is more recent than the one publicly available. Are you on a development build?", result.getNewestVersion()));
+                            this.getLogger().info(String.format("Your version of mGiveaway (%s) is more recent than the one publicly available. Are you on a development build?", result.getNewestVersion()));
                         } else {
-                            this.getLogger().warning("Could not check for a new version of mGiveaways. Reason: " + reason);
+                            this.getLogger().warning("Could not check for a new version of mGiveaway. Reason: " + reason);
                         }
                     }
             );
@@ -238,11 +256,11 @@ public final class MGiveaway extends JavaPlugin {
         new DiscordListener();
         dbUtils = new DBUtils();
         giveawayManager.fetchGiveaways();
-        if(updateGiveaways != null && !updateGiveaways.isCancelled()) {
+        if (updateGiveaways != null && !updateGiveaways.isCancelled()) {
             updateGiveaways.cancel();
         }
         resetUpdateGiveaways();
-        if(saveEntries != null && !saveEntries.isCancelled()) {
+        if (saveEntries != null && !saveEntries.isCancelled()) {
             saveEntries.cancel();
         }
         saveEntries();
@@ -264,8 +282,8 @@ public final class MGiveaway extends JavaPlugin {
         }
         saveEntries = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             if (!isPaused()) {
-                for (Giveaway giveaway : giveawayManager.listGiveaways().values()) {
-                    if(giveaway.state() == Giveaway.State.STARTED)
+                for (Giveaway giveaway : new ArrayList<>(giveawayManager.listGiveaways().values())) {
+                    if (giveaway.state() == Giveaway.State.STARTED)
                         dbUtils.saveEntries(giveaway);
                 }
             }
