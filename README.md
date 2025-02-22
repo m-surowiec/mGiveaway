@@ -149,4 +149,4 @@
 <p align="center" style="font-family: 'Trebuchet MS'; font-size: 18px; color: #333;"><b>After making any changes to the <i>config.yml</i> file, remember to use <i>/mgwreload</i> in-game to reload the plugin.</b></p>
 <p align="center" style="font-family: 'Trebuchet MS'; font-size: 18px; color: #333;">Sometimes, the plugin pauses itself because of runtime errors. To restart it just reload it ;)</p>
 
-  [![bStats: Paper Servers](https://bstats.org/signatures/bukkit/mGiveaway.svg)]([https://bstats.org/plugin/24362](https://bstats.org/plugin/bukkit/mGiveaway/24362))
+  [![bStats: Paper Servers](https://bstats.org/signatures/bukkit/mGiveaway.svg)](https://bstats.org/plugin/bukkit/mGiveaway/24362)
