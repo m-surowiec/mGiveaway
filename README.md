@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1340978735326953495/1341122245392597052/banerkolka.png?ex=67b4d8ec&is=67b3876c&hm=28e641bfa7acbeb11b7fc6ed1728ef902522d1c3052f2b2a67d417f9ec0430dc&=&format=webp&quality=lossless" alt="mGiveaway Banner"/>
+  <img src="https://i.imgur.com/r36XcWN.png" alt="mGiveaway Banner"/>
 </p>
 
 <p align="center">
   <a href="https://github.com/m-surowiec/mGiveaway">
-    <img src="https://media.discordapp.net/attachments/1340978735326953495/1341127089289433118/2.png?ex=67b4dd6f&is=67b38bef&hm=fc66979c45e40a8a85733405921a22768f64c43119f8059a21e9ce59283d71b7&=&format=webp&quality=lossless" alt="GitHub Link"/>
+    <img src="https://i.imgur.com/nblc47G.png" alt="GitHub Link"/>
   </a>
   <a href="https://discord.gg/MtFgx2jnYE">
-    <img src="https://media.discordapp.net/attachments/1340978735326953495/1341127088979185734/1.png?ex=67b4dd6e&is=67b38bee&hm=93ce2e7acabb55cc7385ac377da168ae2d6af3dafb2673e52965086ed14452a8&=&format=webp&quality=lossless" alt="Discord Link"/>
+    <img src="https://i.imgur.com/1jemm1e.png" alt="Discord Link"/>
   </a>
 </p>
 
 <h1 align="center">mGiveaway - Discord Minecraft Giveaway Plugin</h1>
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123337107275848/key.png?ex=67b4d9f0&is=67b38870&hm=6c8745f955060957a6cae0b0a235793cae4464fa83481b9baac479dfb2f1ba98&=&format=webp&quality=lossless" alt="Key Features Icon"/>
+  <img src="https://i.imgur.com/zI6CWqZ.png" alt="Key Features Icon"/>
 </p>
 
 *   **Discord Integration:** Slash commands for easy giveaway creation & management in Discord.
@@ -30,7 +30,7 @@
 
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123337593552987/req.png?ex=67b4d9f0&is=67b38870&hm=a34a5ca0e9344b7e283083eec5754dbdcce0d75da5a922356b900558f384463a&=&format=webp&quality=lossless" alt="Requirements Icon"/>
+  <img src="https://i.imgur.com/feLp8Uj.png" alt="Requirements Icon"/>
 </p>
 
 *   **Paper Server:** 1.17+
@@ -39,7 +39,7 @@
 
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123336398438450/setup.png?ex=67b4d9f0&is=67b38870&hm=c37d8155b060e2b2cb8a0198a2797e453c1b49910b3ed70ab683111428d3eb8f&=&format=webp&quality=lossless" alt="Setup & Installation Icon"/>
+  <img src="https://i.imgur.com/zQFONmG.png" alt="Setup & Installation Icon"/>
 </p>
 
 1.  **Download & Install:** Get `mGiveaway-VERSION.jar` from [GitHub Releases](https://github.com/m-surowiec/mGiveaway/releases/latest) and place in `/plugins` folder.
@@ -59,7 +59,7 @@
 5.  **Reload Plugin:** Use `/mgwreload` or restart server.
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123335945326592/cmd.png?ex=67b4d9f0&is=67b38870&hm=abcc5890d29aea1eff1836efd434c5d4de42fdb83cbdaaf98ceb66461bdc5ff0&=&format=webp&quality=lossless" alt="Slash Command Icon"/>
+  <img src="https://i.imgur.com/mW79SAM.png" alt="Slash Command Icon"/>
 </p>
 
 Use `/create_giveaway` (default) to create giveaways. 
@@ -94,7 +94,7 @@ See the example giveaway configuration (`giveaways.5Diamonds`) in the `config.ym
         *   `<placeholder_name>`: `over: <number>` or `under: <number>`, `formatted`.
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123337316864033/place.png?ex=67b4d9f0&is=67b38870&hm=8a00c188e29b9c8c4b831c4be9876b8477dbc35fad8198ba0173f7857ea0fec9&=&format=webp&quality=lossless" alt="Placeholders Icon"/>
+  <img src="https://i.imgur.com/ncy99or.png" alt="Placeholders Icon"/>
 </p>
 
 #### For Giveaway and Giveaway End Embeds:
@@ -107,7 +107,7 @@ See the example giveaway configuration (`giveaways.5Diamonds`) in the `config.ym
 
 
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/1339307861536276663/1341123336867938437/info.png?ex=67b4d9f0&is=67b38870&hm=46493436d8eadc6695e7b10c9ce6e24494be56b6b4af25f8a9111761ec22e9c8&=&format=webp&quality=lossless" alt="Important Notes Icon"/>
+  <img src="https://i.imgur.com/Yum0oka.png" alt="Important Notes Icon"/>
 </p>
 
 *   **Paper server is required. This plugin won't work on Spigot**
