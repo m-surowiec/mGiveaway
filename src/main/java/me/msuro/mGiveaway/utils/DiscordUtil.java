@@ -137,20 +137,25 @@ public class DiscordUtil {
         json = json.replace("{WIN-COUNT}", giveaway.winCount().toString());
         json = json.replace("{PRIZE}", giveaway.prize());
 
-        // END GIVEAWAY EMBED REPLACEMENTS - PLACEHOLDER: {WINNERS}
-        StringBuilder sb = new StringBuilder(" ");
         HashMap<String, String> entries = giveaway.entries();
-        for (String key : giveaway.winners().keySet()) {
-            sb.append("<@")
-                    .append(key)
-                    .append(">" + ": ")
-                    .append(entries.get(key).replace("_", "\\\\_"))
-                    .append("\\n");
 
-        }
-        if(sb.length() > 2) {
-            sb.delete(sb.length() - 2, sb.length());
-            json = json.replace("{WINNERS}", sb.toString());
+        // END GIVEAWAY EMBED REPLACEMENTS - PLACEHOLDER: {WINNERS}
+        if(giveaway.state() == Giveaway.State.ENDED) {
+            StringBuilder sb = new StringBuilder(" ");
+            for (String key : giveaway.winners().keySet()) {
+                sb.append("<@")
+                        .append(key)
+                        .append(">" + ": ")
+                        .append(entries.get(key).replace("_", "\\\\_"))
+                        .append("\\n");
+
+            }
+            if (sb.length() > 2) {
+                sb.delete(sb.length() - 2, sb.length());
+                json = json.replace("{WINNERS}", sb.toString());
+            } else {
+                json = json.replace("{WINNERS}", "No winners!");
+            }
         }
 
         // LOG EMBED GIVEAWAY REPLACEMENTS - PLACEHOLDERS: {GIVEAWAY-NAME}, {ENTRIES-COUNT}, {PRIZE}, {COMMANDS}, {WINNERS-MENTIONS}, {ENTRIES-LIST}
@@ -158,7 +163,7 @@ public class DiscordUtil {
         json = json.replace("{ENTRIES-COUNT}", giveaway.entries().size() + "");
         json = json.replace("{PRIZE}", giveaway.prize());
         json = json.replace("{COMMANDS}", String.join(",", giveaway.prizeCommands()));
-        sb = new StringBuilder(" ");
+        StringBuilder sb = new StringBuilder(" ");
         for (String key : giveaway.winners().keySet()) {
             sb.append("<@").append(key).append("> ");
         }

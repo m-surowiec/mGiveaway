@@ -295,6 +295,7 @@ public final class MGiveaway extends JavaPlugin {
                 }
 
                 for (Giveaway giveaway : giveawayManager.listGiveaways().values()) {
+                    System.out.println(giveaway.toString());
                     if (giveaway.shouldStart()) {
                         giveawayManager.startGiveaway(giveaway);
                     }

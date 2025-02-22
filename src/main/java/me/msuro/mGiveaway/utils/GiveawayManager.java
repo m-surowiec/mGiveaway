@@ -35,6 +35,7 @@ public class GiveawayManager {
     }
 
     public void endGiveaway(Giveaway giveaway) {
+        instance.getLogger().info("Ending giveaway: " + giveaway.name());
         HashMap<String, String> winners = drawWinners(giveaway);
         giveaway = giveaway.withState(Giveaway.State.ENDED);
         giveaway = giveaway.withWinners(winners);
@@ -51,6 +52,7 @@ public class GiveawayManager {
                 }
             }
         });
+        instance.getLogger().info("Ended giveaway: " + giveaway.name() + " with " + winners.size() + " winners. [" + giveaway.entries().size() + " entries]");
 
     }
 
