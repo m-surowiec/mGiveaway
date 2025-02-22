@@ -23,10 +23,12 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class DiscordUtil {
 
@@ -127,26 +129,33 @@ public class DiscordUtil {
     public String replaceJsonPlaceholders(String json, Giveaway giveaway) {
         // GLOBAL REPLACEMENTS - PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        json = json.replace("{TIME-LEFT}", "<t:" + giveaway.endTimeParsed().toEpochSecond(ZoneOffset.UTC) + ":R>");
-        json = json.replace("{END-TIME}", giveaway.endTime());
+        json = json.replace("{TIME-LEFT}",
+                "<t:" + giveaway.endTimeParsed()
+                        .atZone(ZoneId.systemDefault())
+                        .toEpochSecond() + ":R>");        json = json.replace("{END-TIME}", giveaway.endTime());
         json = json.replace("{ENTRIES}", giveaway.entries().size() + "");
         json = json.replace("{WIN-COUNT}", giveaway.winCount().toString());
         json = json.replace("{PRIZE}", giveaway.prize());
 
-        // END GIVEAWAY EMBED REPLACEMENTS - PLACEHOLDER: {WINNERS}
-        StringBuilder sb = new StringBuilder(" ");
         HashMap<String, String> entries = giveaway.entries();
-        for (String key : giveaway.winners().keySet()) {
-            sb.append("<@")
-                    .append(key)
-                    .append(">" + ": ")
-                    .append(entries.get(key).replace("_", "\\\\_"))
-                    .append("\\n");
 
-        }
-        if(sb.length() > 2) {
-            sb.delete(sb.length() - 2, sb.length());
-            json = json.replace("{WINNERS}", sb.toString());
+        // END GIVEAWAY EMBED REPLACEMENTS - PLACEHOLDER: {WINNERS}
+        if(giveaway.state() == Giveaway.State.ENDED) {
+            StringBuilder sb = new StringBuilder(" ");
+            for (String key : giveaway.winners().keySet()) {
+                sb.append("<@")
+                        .append(key)
+                        .append(">" + ": ")
+                        .append(entries.get(key).replace("_", "\\\\_"))
+                        .append("\\n");
+
+            }
+            if (sb.length() > 2) {
+                sb.delete(sb.length() - 2, sb.length());
+                json = json.replace("{WINNERS}", sb.toString());
+            } else {
+                json = json.replace("{WINNERS}", "No winners!");
+            }
         }
 
         // LOG EMBED GIVEAWAY REPLACEMENTS - PLACEHOLDERS: {GIVEAWAY-NAME}, {ENTRIES-COUNT}, {PRIZE}, {COMMANDS}, {WINNERS-MENTIONS}, {ENTRIES-LIST}
@@ -154,7 +163,7 @@ public class DiscordUtil {
         json = json.replace("{ENTRIES-COUNT}", giveaway.entries().size() + "");
         json = json.replace("{PRIZE}", giveaway.prize());
         json = json.replace("{COMMANDS}", String.join(",", giveaway.prizeCommands()));
-        sb = new StringBuilder(" ");
+        StringBuilder sb = new StringBuilder(" ");
         for (String key : giveaway.winners().keySet()) {
             sb.append("<@").append(key).append("> ");
         }

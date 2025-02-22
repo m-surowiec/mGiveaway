@@ -35,6 +35,7 @@ public class GiveawayManager {
     }
 
     public void endGiveaway(Giveaway giveaway) {
+        instance.getLogger().info("Ending giveaway: " + giveaway.name());
         HashMap<String, String> winners = drawWinners(giveaway);
         giveaway = giveaway.withState(Giveaway.State.ENDED);
         giveaway = giveaway.withWinners(winners);
@@ -51,6 +52,7 @@ public class GiveawayManager {
                 }
             }
         });
+        instance.getLogger().info("Ended giveaway: " + giveaway.name() + " with " + winners.size() + " winners. [" + giveaway.entries().size() + " entries]");
 
     }
 
@@ -69,6 +71,17 @@ public class GiveawayManager {
     public void editEntry() {
         // Edit an entry in a giveaway
     }
+
+    public Giveaway addEntry(Giveaway giveaway, String id, String nick) {
+        HashMap<String, String> entries = giveaway.entries();
+        entries.put(id, nick);
+        giveaway = giveaway.withEntries(entries);
+        MGiveaway.getInstance().getLogger().info("[" + giveaway.name() + "] Added entry: " + id + " (" + nick + ") " + entries.size());
+        putGiveaway(giveaway);
+        instance.getDBUtil().saveEntries(giveaway); // Save entries to the database immediately after adding an entry
+        return giveaway;
+    }
+
 
     public HashMap<String, String> drawWinners(Giveaway giveaway) {
         HashMap<String, String> entries = giveaway.entries();
@@ -114,6 +127,7 @@ public class GiveawayManager {
 
     public HashMap<String, Giveaway> fetchGiveaways() {
         giveaways.clear();
+        //MGiveaway.getInstance().getLogger().info("Fetching giveaways...");
         ConfigurationSection section = instance.getConfig().getConfigurationSection("giveaways");
         if (section == null) {
             return giveaways;

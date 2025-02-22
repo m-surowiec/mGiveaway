@@ -3,10 +3,12 @@ package me.msuro.mGiveaway;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
 public record Giveaway(
         String                  name,            // REQUIRED - The unique internal name of the giveaway.
@@ -34,7 +36,7 @@ public record Giveaway(
     // Methods for filling optional fields
 
     public Giveaway withStartTime(String startTime) {
-        LocalDateTime startTimeParsed = startTime != null ? LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) : null;
+        LocalDateTime startTimeParsed = startTime != null ? LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalDateTime() : null;
         return new Giveaway(name, prize, minecraftPrize, endTime, endTimeParsed, startTime, startTimeParsed, winCount, embedId, state, entries, prizeCommands, winners, requirements);
     }
 
@@ -61,7 +63,7 @@ public record Giveaway(
     }
 
     public Giveaway withEndTime(String endTime) {
-        LocalDateTime endTimeParsed = LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        LocalDateTime endTimeParsed = LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalDateTime();
         return new Giveaway(name, prize, minecraftPrize, endTime, endTimeParsed, startTime, startTimeParsed, winCount, embedId, state, entries, prizeCommands, winners, requirements);
     }
 
@@ -126,10 +128,6 @@ public record Giveaway(
         diff -= hours * 3600;
         long minutes = diff / 60;
         return days + "d " + hours + "h " + minutes + "m";
-    }
-
-    public void addEntry(String id, String nick) {
-        entries.put(id, nick);
     }
 
     @Override
