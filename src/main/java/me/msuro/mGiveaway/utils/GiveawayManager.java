@@ -78,6 +78,7 @@ public class GiveawayManager {
         giveaway = giveaway.withEntries(entries);
         MGiveaway.getInstance().getLogger().info("[" + giveaway.name() + "] Added entry: " + id + " (" + nick + ") " + entries.size());
         putGiveaway(giveaway);
+        instance.getDBUtil().saveEntries(giveaway); // Save entries to the database immediately after adding an entry
         return giveaway;
     }
 
