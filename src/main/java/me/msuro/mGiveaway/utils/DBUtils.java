@@ -90,20 +90,30 @@ public class DBUtils {
         if (entries == null || entries.isEmpty()) return;
         try (Connection conn = getConnection()) {
             instance.getLogger().info("Saving entries for giveaway: " + giveaway.name() + " (" + entries.size() + ")");
-            String sql = "INSERT OR REPLACE INTO `entries-" + giveaway.name() + "` (discord_id, minecraft_name) VALUES (?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
             for (Map.Entry<String, String> entry : entries.entrySet()) {
-                pstmt.setString(1, entry.getKey());
-                pstmt.setString(2, entry.getValue());
-                pstmt.addBatch();
+                saveEntry(giveaway.name(), entry.getKey(), entry.getValue());
             }
-            pstmt.executeBatch();
-            pstmt.close();
 
         } catch (SQLException e) {
             MGiveaway.setPaused(true);
             instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
             throw new RuntimeException("Failed to save entries (giveaway: " + giveaway.name() + ")!", e);
+        }
+    }
+
+    public void saveEntry(String giveawayName, String discordId, String minecraftName) {
+        createGiveawayTable(giveawayName);
+        try (Connection conn = getConnection()) {
+            String sql = "INSERT OR REPLACE INTO `entries-" + giveawayName + "` (discord_id, minecraft_name) VALUES (?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, discordId);
+            pstmt.setString(2, minecraftName);
+            pstmt.executeUpdate();
+            pstmt.close();
+        } catch (SQLException e) {
+            MGiveaway.setPaused(true);
+            instance.getLogger().severe("Giveaways paused! Reload the plugin to try again!");
+            throw new RuntimeException("Failed to save entry (giveaway: " + giveawayName + ", discordId: " + discordId + ", minecraftName: " + minecraftName + ")!", e);
         }
     }
 }
