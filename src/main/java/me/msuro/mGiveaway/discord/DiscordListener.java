@@ -128,8 +128,7 @@ public class DiscordListener extends ListenerAdapter {
 
             if (unmetRequirements.isEmpty()) {
                 // Player meets all requirements - proceed with entry
-                giveaway.addEntry(event.getUser().getId(), nick);
-                instance.getGiveawayManager().putGiveaway(giveaway);
+                instance.getGiveawayManager().addEntry(giveaway, event.getUser().getId(), nick);
                 String msg = ConfigUtil.getAndValidate("messages.discord.giveaway_join.joined").replace("%player%", nick);
                 event.replyEmbeds(TextUtil.getReplyEmbed(true, msg)).setEphemeral(true).queue();
                 ConfigUtil.updateStat(event.getUser().getId(), 1);

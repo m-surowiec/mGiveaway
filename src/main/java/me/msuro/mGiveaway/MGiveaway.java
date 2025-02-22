@@ -33,6 +33,7 @@ public final class MGiveaway extends JavaPlugin {
     private Metrics metrics;
     private BukkitTask updateGiveaways;
     private BukkitTask updateCheck;
+    private BukkitTask saveEntries;
     private Permission perms = null;
 
     @Override
@@ -105,7 +106,8 @@ public final class MGiveaway extends JavaPlugin {
         }));
 
         // --- Asynchronous Tasks (updateGiveaways and updateCheck) ---
-        resetUpdateGiveaways();
+        saveEntries = saveEntries();
+        updateGiveaways = resetUpdateGiveaways();
         updateCheck = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             UpdateChecker.init(this, 122302).requestUpdateCheck().whenComplete((result, e) -> {
                         this.getLogger().info("Checking for updates...");
@@ -236,7 +238,14 @@ public final class MGiveaway extends JavaPlugin {
         new DiscordListener();
         dbUtils = new DBUtils();
         giveawayManager.fetchGiveaways();
+        if(updateGiveaways != null && !updateGiveaways.isCancelled()) {
+            updateGiveaways.cancel();
+        }
         resetUpdateGiveaways();
+        if(saveEntries != null && !saveEntries.isCancelled()) {
+            saveEntries.cancel();
+        }
+        saveEntries();
 
         getLogger().info("Reloading plugin complete!");
     }
@@ -247,6 +256,21 @@ public final class MGiveaway extends JavaPlugin {
 
     public GiveawayManager getGiveawayManager() {
         return giveawayManager;
+    }
+
+    private BukkitTask saveEntries() {
+        if (saveEntries != null && !saveEntries.isCancelled()) {
+            saveEntries.cancel();
+        }
+        saveEntries = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (!isPaused()) {
+                for (Giveaway giveaway : giveawayManager.listGiveaways().values()) {
+                    if(giveaway.state() == Giveaway.State.STARTED)
+                        dbUtils.saveEntries(giveaway);
+                }
+            }
+        }, 120, 20 * 60 * 10);
+        return saveEntries;
     }
 
     private BukkitTask resetUpdateGiveaways() {

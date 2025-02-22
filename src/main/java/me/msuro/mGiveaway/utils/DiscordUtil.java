@@ -23,10 +23,12 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class DiscordUtil {
 
@@ -127,8 +129,10 @@ public class DiscordUtil {
     public String replaceJsonPlaceholders(String json, Giveaway giveaway) {
         // GLOBAL REPLACEMENTS - PLACEHOLDERS: {TIME-LEFT}, {ENTRIES}, {WIN-COUNT}, {PRIZE}, {END-TIME}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        json = json.replace("{TIME-LEFT}", "<t:" + giveaway.endTimeParsed().toEpochSecond(ZoneOffset.UTC) + ":R>");
-        json = json.replace("{END-TIME}", giveaway.endTime());
+        json = json.replace("{TIME-LEFT}",
+                "<t:" + giveaway.endTimeParsed()
+                        .atZone(ZoneId.systemDefault())
+                        .toEpochSecond() + ":R>");        json = json.replace("{END-TIME}", giveaway.endTime());
         json = json.replace("{ENTRIES}", giveaway.entries().size() + "");
         json = json.replace("{WIN-COUNT}", giveaway.winCount().toString());
         json = json.replace("{PRIZE}", giveaway.prize());
