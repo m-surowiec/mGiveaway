@@ -37,32 +37,45 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (!event.getName().equalsIgnoreCase(ConfigUtil.getAndValidate(ConfigUtil.COMMAND_NAME))) return;
-        if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)) {
-            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION))).setEphemeral(true).queue();
-            return;
+        try {
+            if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)) {
+                event.replyEmbeds(EmbedUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION))).setEphemeral(true).queue();
+                return;
+            }
+            if (MGiveaway.isPaused()) {
+                event.replyEmbeds(EmbedUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
+                return;
+            }
+            OptionMapping nameOption = event.getOption("name");
+            OptionMapping prizeOption = event.getOption("prize");
+            OptionMapping minecraftPrizeOption = event.getOption("minecraft_prize");
+            OptionMapping durationOption = event.getOption("duration");
+            OptionMapping winnersOption = event.getOption("winners");
+            OptionMapping commandOption = event.getOption("command");
+            OptionMapping requirementsOption = event.getOption("requirements");
+            if (nameOption == null || prizeOption == null || minecraftPrizeOption == null || durationOption == null || winnersOption == null || commandOption == null) {
+                event.replyEmbeds(EmbedUtil.getReplyEmbed(false, "Error creating giveaway! Missing required options.")).setEphemeral(true).queue();
+                return;
+            }
+            String name = nameOption.getAsString();
+            String prize = prizeOption.getAsString();
+            String minecraftPrize = minecraftPrizeOption.getAsString();
+            String duration = durationOption.getAsString();
+            int winners = winnersOption.getAsLong() > 0 ? (int) winnersOption.getAsLong() : 1;
+            String command = commandOption.getAsString();
+            boolean requirements = requirementsOption != null && requirementsOption.getAsBoolean();
+
+            if (!ConfigUtil.createGiveaway(name, prize, minecraftPrize, duration, winners, command, requirements)) {
+                String desc = ConfigUtil.getAndValidate(ConfigUtil.MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS).replace("%name%", name);
+                event.replyEmbeds(EmbedUtil.getReplyEmbed(false, desc)).setEphemeral(true).queue();
+            } else {
+                String desc = ConfigUtil.getAndValidate(ConfigUtil.MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED).replace("%name%", name);
+                event.replyEmbeds(EmbedUtil.getReplyEmbed(true, desc)).setEphemeral(true).queue();
+            }
+        } catch (Exception e) {
+            instance.getLogger().severe("Error creating giveaway! " + e.getMessage());
+            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, "Error creating giveaway! Please try again.\n" + e.getCause())).setEphemeral(true).queue();
         }
-        if (MGiveaway.isPaused()) {
-            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED))).setEphemeral(true).queue();
-            return;
-        }
-        OptionMapping nameOption = event.getOption("name");
-        OptionMapping prizeOption = event.getOption("prize");
-        OptionMapping minecraftPrizeOption = event.getOption("minecraft_prize");
-        OptionMapping durationOption = event.getOption("duration");
-        OptionMapping winnersOption = event.getOption("winners");
-        OptionMapping commandOption = event.getOption("command");
-        OptionMapping requirementsOption = event.getOption("requirements");
-        if (nameOption == null || prizeOption == null || minecraftPrizeOption == null || durationOption == null || winnersOption == null || commandOption == null) {
-            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, "Error creating giveaway! Missing required options.")).setEphemeral(true).queue();
-            return;
-        }
-        String name = nameOption.getAsString();
-        String prize = prizeOption.getAsString();
-        String minecraftPrize = minecraftPrizeOption.getAsString();
-        int duration = durationOption.getAsLong() > 0 ? (int) durationOption.getAsLong() : 0;
-        int winners = winnersOption.getAsLong() > 0 ? (int) winnersOption.getAsLong() : 1;
-        String command = commandOption.getAsString();
-        String requirements = requirementsOption == null ? null : requirementsOption.getAsString();
     }
 
     @Override

@@ -127,6 +127,9 @@ messages:
       no_permission: "You don't have permission to use this command!"
       missing_required_args: "Error creating giveaway! Missing required options."
       plugin_paused: "Giveaways are paused! There's a plugin error!"
+      already_exists: "A giveaway with this name already exists!"
+    giveaway_command_success:
+        created: "Giveaway `%name%` has been created!"
     giveaway_requirement_error:
       null_player: "**You have never joined the server!**"
       requirements_not_met: "**You do not meet the requirements to enter the giveaway!**\n%requirements%" # %requirements% placeholder for list%requirements% placeholder for list

@@ -282,6 +282,14 @@ public class ConfigUtil {
             reloadConfig();
             instance.getLogger().info("Config updated to version 0.7!");
         }
+        if(isLowerThan(version, "0.7.2")) {
+            config.set(MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS, getOrDefault(MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS));
+            config.set(MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED, getOrDefault(MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED));
+            config.set(CONFIG_VERSION, "0.7.2");
+            saveConfig();
+            reloadConfig();
+            instance.getLogger().info("Config updated to version 0.7.2!");
+        }
      }
 
     /**
@@ -395,6 +403,10 @@ public class ConfigUtil {
     public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_NO_PERMISSION = "messages.discord.giveaway_command_error.no_permission";
     public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_PLUGIN_PAUSED = "messages.discord.giveaway_command_error.plugin_paused";
     public static final String MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS = "messages.discord.giveaway_command_error.missing_required_args";
+    public static final String MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS = "messages.discord.giveaway_command_error.already_exists";
+
+    public static final String MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED = "messages.discord.giveaway_command_success.created";
+
     public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_NULL_PLAYER = "messages.discord.giveaway_requirement_error.null_player";
     public static final String MESSAGES_DISCORD_GIVEAWAY_REQUIREMENT_ERROR_REQUIREMENTS_NOT_MET = "messages.discord.giveaway_requirement_error.requirements_not_met";
 

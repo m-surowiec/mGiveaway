@@ -151,7 +151,7 @@ public final class MGiveaway extends JavaPlugin {
                         }
                     }
             );
-        }, 120, 20 * 60 * 60);
+        }, 120, 20 * 60 * 60 * 2);
 
     }
 
