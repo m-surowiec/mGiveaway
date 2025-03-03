@@ -428,8 +428,8 @@ public class ConfigUtil {
     public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS = "messages.discord.embed_title.success";
     public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR = "messages.discord.embed_title.error";
 
-    public static final String GIVEAWAY_INFO_PERSONAL_ON_JOIN = "giveaway_info_personal.on_join";
-    public static final String GIVEAWAY_INFO_GLOBAL_ON_START = "giveaway_info_global.on_start";
-    public static final String GIVEAWAY_INFO_GLOBAL_ON_END = "giveaway_info_global.on_end";
+    public static final String GIVEAWAY_INFO_PERSONAL_ON_JOIN = "messages.in_game.giveaway_info_personal.on_join";
+    public static final String GIVEAWAY_INFO_GLOBAL_ON_START = "messages.in_game.giveaway_info_global.on_start";
+    public static final String GIVEAWAY_INFO_GLOBAL_ON_END = "messages.in_game.giveaway_info_global.on_end";
 
 }
