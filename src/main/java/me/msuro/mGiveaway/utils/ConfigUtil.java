@@ -266,30 +266,35 @@ public class ConfigUtil {
             config.set(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR));
             // Log embed
             config.set(GIVEAWAY_LOG_EMBED, getOrDefault(GIVEAWAY_LOG_EMBED));
-
-
+            // Config version
             config.set(CONFIG_VERSION, "0.5");
-            saveConfig();
-            reloadConfig();
             instance.getLogger().info("Config updated to version 0.5!");
         }
         if(isLowerThan(version, "0.7")) {
             config.set(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS, getOrDefault(MESSAGES_DISCORD_GIVEAWAY_COMMAND_ERROR_MISSING_REQUIRED_ARGS));
             config.set(UPDATE_AVAILABLE, getOrDefault(UPDATE_AVAILABLE));
             config.set(UPDATE_AVAILABLE_HOVER, getOrDefault(UPDATE_AVAILABLE_HOVER));
+            // Config version
             config.set(CONFIG_VERSION, "0.7");
-            saveConfig();
-            reloadConfig();
             instance.getLogger().info("Config updated to version 0.7!");
         }
         if(isLowerThan(version, "0.7.2")) {
             config.set(MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS, getOrDefault(MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS));
             config.set(MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED, getOrDefault(MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED));
+            // Config version
             config.set(CONFIG_VERSION, "0.7.2");
-            saveConfig();
-            reloadConfig();
             instance.getLogger().info("Config updated to version 0.7.2!");
         }
+        if (isLowerThan(version, "0.7.3")) {
+            config.set(GIVEAWAY_INFO_PERSONAL_ON_JOIN, getOrDefault(GIVEAWAY_INFO_PERSONAL_ON_JOIN));
+            config.set(GIVEAWAY_INFO_GLOBAL_ON_START, getOrDefault(GIVEAWAY_INFO_GLOBAL_ON_START));
+            config.set(GIVEAWAY_INFO_GLOBAL_ON_END, getOrDefault(GIVEAWAY_INFO_GLOBAL_ON_END));
+            // Config version
+            config.set(CONFIG_VERSION, "0.7.3");
+            instance.getLogger().info("Config updated to version 0.7.3!");
+        }
+        saveConfig();
+        reloadConfig();
      }
 
     /**
@@ -422,5 +427,9 @@ public class ConfigUtil {
 
     public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_SUCCESS = "messages.discord.embed_title.success";
     public static final String MESSAGES_DISCORD_GIVEAWAY_EMBED_TITLE_ERROR = "messages.discord.embed_title.error";
+
+    public static final String GIVEAWAY_INFO_PERSONAL_ON_JOIN = "giveaway_info_personal.on_join";
+    public static final String GIVEAWAY_INFO_GLOBAL_ON_START = "giveaway_info_global.on_start";
+    public static final String GIVEAWAY_INFO_GLOBAL_ON_END = "giveaway_info_global.on_end";
 
 }

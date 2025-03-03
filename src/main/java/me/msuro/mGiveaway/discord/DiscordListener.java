@@ -5,6 +5,7 @@ import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.EmbedUtil;
+import me.msuro.mGiveaway.utils.GiveawayManager;
 import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -71,6 +72,12 @@ public class DiscordListener extends ListenerAdapter {
             } else {
                 String desc = ConfigUtil.getAndValidate(ConfigUtil.MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED).replace("%name%", name);
                 event.replyEmbeds(EmbedUtil.getReplyEmbed(true, desc)).setEphemeral(true).queue();
+                GiveawayManager manager = instance.getGiveawayManager();
+                Giveaway giveaway = manager.listGiveaways().get(name);
+                if (giveaway != null && giveaway.shouldStart()) {
+                    manager.startGiveaway(giveaway);
+                    instance.getLogger().info("Giveaway started: " + giveaway.name());
+                }
             }
         } catch (Exception e) {
             instance.getLogger().severe("Error creating giveaway! " + e.getMessage());

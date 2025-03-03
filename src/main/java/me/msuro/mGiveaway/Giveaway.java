@@ -22,7 +22,7 @@ public record Giveaway(
         State                   state,           // REQUIRED - The current state of the giveaway (PENDING, STARTED, ENDED).
         HashMap<String, String> entries,         // REQUIRED - A map of Discord user IDs to Minecraft usernames (entries).
         List<String>            prizeCommands,   // REQUIRED - A list of RewardCommand objects (command + execution mode).
-        HashMap<String, String> winners,         // OPTIONAL - A list of winner Discord user IDs.  Empty initially.
+        HashMap<String, String> winners,         // OPTIONAL - A map of Discord user IDs to Minecraft usernames (winners). Null initially.
         List<Requirement>       requirements     // REQUIRED - A list of entry requirements.
         ) {
 
