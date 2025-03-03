@@ -1,4 +1,4 @@
-package me.msuro.mGiveaway;
+package me.msuro.mGiveaway.utils;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;

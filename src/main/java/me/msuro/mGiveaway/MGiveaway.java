@@ -3,11 +3,7 @@ package me.msuro.mGiveaway;
 import me.msuro.mGiveaway.commands.Reload;
 import me.msuro.mGiveaway.discord.DiscordListener;
 import me.msuro.mGiveaway.listener.PlayerListener;
-import me.msuro.mGiveaway.utils.ConfigUtil;
-import me.msuro.mGiveaway.utils.DBUtils;
-import me.msuro.mGiveaway.utils.DiscordUtil;
-import me.msuro.mGiveaway.utils.GiveawayManager;
-import me.msuro.mGiveaway.utils.TextUtil;
+import me.msuro.mGiveaway.utils.*;
 import net.dv8tion.jda.api.JDA;
 import net.md_5.bungee.api.chat.*;
 import net.milkbowl.vault.permission.Permission;
@@ -153,7 +149,7 @@ public final class MGiveaway extends JavaPlugin {
                         }
                     }
             );
-        }, 120, 20 * 60 * 60 * 2);
+        }, 120, 20 * 60 * 60 * 6);
 
     }
 
