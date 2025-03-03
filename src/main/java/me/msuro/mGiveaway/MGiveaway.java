@@ -127,7 +127,9 @@ public final class MGiveaway extends JavaPlugin {
                                         TextComponent.fromLegacyText(
                                                 TextUtil.toMinecraftHex(
                                                         TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.UPDATE_AVAILABLE_HOVER)))
-                                                        .replace("%new_version%", result.getNewestVersion()))));
+                                                        .replace("%new_version%", result.getNewestVersion())
+                                                        .replace("%current_version%", instance.getDescription().getVersion()))));
+
                             }
 
                             this.getServer().getConsoleSender().spigot().sendMessage(message);

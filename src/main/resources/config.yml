@@ -144,6 +144,7 @@ messages:
       join_button_emoji: "🎉"
   in_game:
     no_permission: "%prefix% &cYou don't have permission to use this command!"
+    # PLACEHOLDERS: %current_version%, %new_version%
     update_available: "%prefix% &fYou're running an old version! &7%new_version% &fis available on &#52FFB2&lModrinth"
     update_available_hover: "&7&8&n&oClick to open the mGiveaway page on Modrinth"
 
