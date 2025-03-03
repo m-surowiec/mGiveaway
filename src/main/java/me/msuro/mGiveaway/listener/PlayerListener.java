@@ -21,6 +21,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        System.out.println("Player joinedv1");
         instance.getServer().getScheduler().runTaskLater(instance, new Runnable() {
             @Override
             public void run() {

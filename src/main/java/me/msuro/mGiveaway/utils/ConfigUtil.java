@@ -148,7 +148,7 @@ public class ConfigUtil {
         saveConfig();
     }
 
-    public static boolean createGiveaway(String name, String prize, String minecraftPrize, String duration, int winners, String command, boolean requirements) {
+    public static boolean createGiveaway(String name, String prize, String minecraftPrize, String duration, int winners, String command, boolean requirements) throws IllegalArgumentException {
         if (getOptional("giveaways." + name + ".settings.end_time") != null) return false;
         config.createSection("giveaways." + name);
         long durationInSeconds = parseDuration(duration);
@@ -200,7 +200,10 @@ public class ConfigUtil {
         Matcher matcher = pattern.matcher(duration);
 
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid duration format: " + duration);
+            IllegalArgumentException e = new IllegalArgumentException("Invalid duration format: " + duration);
+            e.addSuppressed(new IllegalArgumentException("Valid format: 1mo 2w 3d 4h 5m 6s"));
+            e.addSuppressed(new IllegalArgumentException("Invalid format: " + duration));
+            throw e;
         }
 
         Pattern blockPattern = Pattern.compile("(\\d+)(mo|w|d|h|m|s)");

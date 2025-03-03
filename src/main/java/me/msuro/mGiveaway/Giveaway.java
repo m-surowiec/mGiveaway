@@ -91,10 +91,11 @@ public record Giveaway(
     /**
      * Returns whether the giveaway should start immediately.
      * This is determined by the state, scheduled start time and the presence of a force-start flag. (From the discord command)
+     *
      * @return True if the giveaway should start immediately, false otherwise.
      */
     public boolean shouldStart() {
-        return state == State.NOT_STARTED && (startTimeParsed == null || (startTimeParsed().isBefore(LocalDateTime.now()) && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null));
+        return state == State.NOT_STARTED && (startTimeParsed == null || startTimeParsed.isBefore(LocalDateTime.now()) || ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null);
     }
 
     /**
