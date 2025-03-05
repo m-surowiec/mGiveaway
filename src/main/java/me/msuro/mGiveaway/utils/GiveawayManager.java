@@ -35,7 +35,7 @@ public class GiveawayManager {
         giveaways.put(giveaway.name(), giveaway);
         String message = ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_GLOBAL_ON_START);
         Bukkit.broadcastMessage(TextUtil.process(message
-                .replace("%winners%", String.valueOf(giveaway.winCount()))
+                .replace("%win_count%", String.valueOf(giveaway.winCount()))
                 .replace("%prize%", giveaway.minecraftPrize())
                 .replace("%time_left%", giveaway.getTimeLeft())));
     }
@@ -52,8 +52,8 @@ public class GiveawayManager {
         putGiveaway(giveaway);
         List<String> commands = giveaway.prizeCommands();
         instance.getServer().getScheduler().runTask(instance, () -> {
-            for(String value : winners.values()) {
-                for(String command : commands) {
+            for (String value : winners.values()) {
+                for (String command : commands) {
                     try {
                         instance.getServer().dispatchCommand(instance.getServer().getConsoleSender(), command.replace("%player%", value));
                     } catch (CommandException e) {
@@ -67,6 +67,7 @@ public class GiveawayManager {
         String winnerList = String.join(", ", giveaway.winners().values());
         Bukkit.broadcastMessage(TextUtil.process(message
                 .replace("%winners%", winnerList)
+                .replace("%win_count%", String.valueOf(giveaway.winCount()))
                 .replace("%prize%", giveaway.minecraftPrize())));
     }
 
@@ -116,7 +117,7 @@ public class GiveawayManager {
     }
 
     public HashMap<String, Giveaway> listGiveaways() {
-        if(giveaways.isEmpty()) {
+        if (giveaways.isEmpty()) {
             fetchGiveaways();
         }
         return giveaways;
@@ -157,7 +158,7 @@ public class GiveawayManager {
     }
 
     public Giveaway giveawayFromConfig(String name) {
-        if(name == null || name.isBlank()) {
+        if (name == null || name.isBlank()) {
             return null;
         }
         ConfigurationSection section = instance.getConfig().getConfigurationSection("giveaways." + name);
@@ -200,7 +201,7 @@ public class GiveawayManager {
         ConfigurationSection permSection = section.getConfigurationSection(section.getCurrentPath() + ".requirements.permission");
         if (permSection != null) {
             for (String key : permSection.getKeys(false)) {
-                try{
+                try {
                     Requirement req = new Requirement(
                             key,
                             Requirement.Type.PERMISSION,
@@ -208,8 +209,7 @@ public class GiveawayManager {
                             -2147483648,
                             ConfigUtil.getOptional(permSection.getCurrentPath() + "." + key + ".formatted"));
                     requirements.add(req);
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     MGiveaway.getInstance().getLogger().severe("Error loading permission requirement " + key + " : " + e.getMessage());
                 }
             }
@@ -220,7 +220,7 @@ public class GiveawayManager {
         ConfigurationSection groupSection = section.getConfigurationSection(section.getCurrentPath() + ".requirements.group");
         if (groupSection != null) {
             for (String key : groupSection.getKeys(false)) {
-                try{
+                try {
                     Requirement req = new Requirement(
                             key,
                             Requirement.Type.ROLE,
@@ -228,18 +228,18 @@ public class GiveawayManager {
                             -2147483648,
                             ConfigUtil.getOptional(groupSection.getCurrentPath() + "." + key + ".formatted"));
                     requirements.add(req);
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     MGiveaway.getInstance().getLogger().severe("Error loading group requirement " + key + " : " + e.getMessage());
                 }
             }
         }
     }
+
     private void loadPlaceholderRequirements(List<Requirement> requirements, ConfigurationSection section) {
         ConfigurationSection placeholderSection = section.getConfigurationSection(section.getCurrentPath() + ".requirements.placeholder");
         if (placeholderSection != null) {
             for (String key : placeholderSection.getKeys(false)) {
-                try{
+                try {
                     String valueOver = ConfigUtil.getOptional(placeholderSection.getCurrentPath() + "." + key + ".over");
                     String valueUnder = ConfigUtil.getOptional(placeholderSection.getCurrentPath() + "." + key + ".under");
                     if (valueOver != null) {
@@ -260,11 +260,9 @@ public class GiveawayManager {
                                 ConfigUtil.getOptional(placeholderSection.getCurrentPath() + "." + key + ".formatted"));
                         requirements.add(req);
                     }
-                }
-                catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     MGiveaway.getInstance().getLogger().severe("Error loading placeholder requirement " + key + " : Invalid number " + e.getMessage());
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     MGiveaway.getInstance().getLogger().severe("Error loading placeholder requirement " + key + " : " + e.getMessage());
                 }
             }
