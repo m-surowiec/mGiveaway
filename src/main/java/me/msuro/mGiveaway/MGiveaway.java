@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 @SuppressWarnings("deprecation")
 public final class MGiveaway extends JavaPlugin {
