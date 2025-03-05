@@ -113,6 +113,8 @@ discord:
       }
 
 messages:
+  global:
+    no_winners: "No winners!"
   discord:
     embed_title:
       success: "Success!"
@@ -197,4 +199,4 @@ giveaways:
         mcgramy-giveaway: true
 
 # DO NOT EDIT THIS VALUE
-config_version: 0.7
+config_version: 0.7.4

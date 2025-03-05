@@ -88,7 +88,7 @@ public class TextUtil {
                 sb.delete(sb.length() - 2, sb.length());
                 json = replacePlaceholders(json, Map.of("{WINNERS}", sb.toString()));
             } else {
-                json = replacePlaceholders(json, Map.of("{WINNERS}", "No winners!"));
+                json = replacePlaceholders(json, Map.of("{WINNERS}", ConfigUtil.getAndValidate(ConfigUtil.MESSAGES_GLOBAL_NO_WINNERS)));
             }
         }
 
