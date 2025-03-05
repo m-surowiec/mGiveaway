@@ -320,7 +320,7 @@ public final class MGiveaway extends JavaPlugin {
                             && giveaway.state().equals(Giveaway.State.STARTED)
                             && n[0] % interval == 0) {
                         Bukkit.broadcastMessage(TextUtil.process(message
-                                .replace("%winners%", String.valueOf(giveaway.winCount()))
+                                .replace("%win_count%", String.valueOf(giveaway.winCount()))
                                 .replace("%prize%", giveaway.minecraftPrize())
                                 .replace("%time_left%", giveaway.getTimeLeft())));
                         n[0] = 0;

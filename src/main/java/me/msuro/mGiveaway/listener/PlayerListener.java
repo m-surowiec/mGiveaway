@@ -25,13 +25,13 @@ public class PlayerListener implements Listener {
             @Override
             public void run() {
                 GiveawayManager manager = instance.getGiveawayManager();
-                for(Giveaway giveaway : manager.listGiveaways().values()) {
-                    if(giveaway.state() == Giveaway.State.STARTED) {
+                for (Giveaway giveaway : manager.listGiveaways().values()) {
+                    if (giveaway.state() == Giveaway.State.STARTED) {
                         String message = TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_PERSONAL_ON_JOIN)
                                 .replace("%name%", giveaway.name())
                                 .replace("%prize%", giveaway.prize())
                                 .replace("%time_left%", giveaway.getTimeLeft())
-                                .replace("%winners%", String.valueOf(giveaway.winCount())));
+                                .replace("%win_count%", String.valueOf(giveaway.winCount())));
                         event.getPlayer().sendMessage(message);
 
 
