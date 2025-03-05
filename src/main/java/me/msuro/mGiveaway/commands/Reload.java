@@ -27,9 +27,9 @@ public class Reload implements CommandExecutor {
             return true;
         }
         long now = System.currentTimeMillis();
-        sender.sendMessage(TextUtil.process("%prefix% &7Reloading plugin..."));
+        sender.sendMessage(TextUtil.process(TextUtil.replacePlaceholders("%prefix% &7Reloading plugin...", Map.of("%prefix%", TextUtil.prefix))));
         instance.reloadPlugin();
-        sender.sendMessage(TextUtil.process("%prefix% &7Plugin reloaded! " + "&8(&a" + (System.currentTimeMillis() - now) + "ms&8)"));
+        sender.sendMessage(TextUtil.process(TextUtil.replacePlaceholders("%prefix% &7Plugin reloaded! " + "&8(&a" + (System.currentTimeMillis() - now) + "ms&8)", Map.of("%prefix%", TextUtil.prefix))));
 
         return true;
     }
