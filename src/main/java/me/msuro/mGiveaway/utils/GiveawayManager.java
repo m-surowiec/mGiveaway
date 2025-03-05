@@ -66,8 +66,8 @@ public class GiveawayManager {
         String message = ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_GLOBAL_ON_END);
         String winnerList = String.join(", ", giveaway.winners().values());
         Bukkit.broadcastMessage(TextUtil.process(message
-                .replace("%winners%", winnerList))
-                .replace("%prize%", giveaway.minecraftPrize()));
+                .replace("%winners%", winnerList)
+                .replace("%prize%", giveaway.minecraftPrize())));
     }
 
     /**
