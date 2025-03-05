@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.Map;
+
 public class PlayerListener implements Listener {
 
     private final MGiveaway instance;
@@ -27,14 +29,13 @@ public class PlayerListener implements Listener {
                 GiveawayManager manager = instance.getGiveawayManager();
                 for (Giveaway giveaway : manager.listGiveaways().values()) {
                     if (giveaway.state() == Giveaway.State.STARTED) {
-                        String message = TextUtil.process(ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_PERSONAL_ON_JOIN)
-                                .replace("%name%", giveaway.name())
-                                .replace("%prize%", giveaway.prize())
-                                .replace("%time_left%", giveaway.getTimeLeft())
-                                .replace("%win_count%", String.valueOf(giveaway.winCount())));
+                        String message = TextUtil.process(TextUtil.replacePlaceholders(ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_PERSONAL_ON_JOIN), Map.of(
+                                "%name%", giveaway.name(),
+                                "%prize%", giveaway.prize(),
+                                "%time_left%", giveaway.getTimeLeft(),
+                                "%win_count%", String.valueOf(giveaway.winCount())
+                        )));
                         event.getPlayer().sendMessage(message);
-
-
                     }
                 }
             }
