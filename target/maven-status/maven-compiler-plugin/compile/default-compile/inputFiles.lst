@@ -1,7 +1,6 @@
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/Giveaway.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/MGiveaway.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/Requirement.java
-/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/UpdateChecker.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/commands/Reload.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/discord/DiscordCommand.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/discord/DiscordListener.java
@@ -12,6 +11,7 @@
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/EmbedUtil.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/GiveawayManager.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/TextUtil.java
+/Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/UpdateChecker.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/colors/ColorAPI.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/colors/patterns/GradientPattern.java
 /Users/msuro/IdeaProjects/mGiveaway/src/main/java/me/msuro/mGiveaway/utils/colors/patterns/Pattern.java

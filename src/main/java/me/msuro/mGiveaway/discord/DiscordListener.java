@@ -5,6 +5,7 @@ import me.msuro.mGiveaway.MGiveaway;
 import me.msuro.mGiveaway.Requirement;
 import me.msuro.mGiveaway.utils.ConfigUtil;
 import me.msuro.mGiveaway.utils.EmbedUtil;
+import me.msuro.mGiveaway.utils.GiveawayManager;
 import me.msuro.mGiveaway.utils.TextUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class DiscordListener extends ListenerAdapter {
@@ -64,17 +66,23 @@ public class DiscordListener extends ListenerAdapter {
             int winners = winnersOption.getAsLong() > 0 ? (int) winnersOption.getAsLong() : 1;
             String command = commandOption.getAsString();
             boolean requirements = requirementsOption != null && requirementsOption.getAsBoolean();
-
             if (!ConfigUtil.createGiveaway(name, prize, minecraftPrize, duration, winners, command, requirements)) {
                 String desc = ConfigUtil.getAndValidate(ConfigUtil.MESSAGE_DISCORD_GIVEAWAY_COMMAND_ERROR_ALREADY_EXISTS).replace("%name%", name);
                 event.replyEmbeds(EmbedUtil.getReplyEmbed(false, desc)).setEphemeral(true).queue();
             } else {
                 String desc = ConfigUtil.getAndValidate(ConfigUtil.MESSAGE_DISCORD_GIVEAWAY_COMMAND_SUCCESS_CREATED).replace("%name%", name);
                 event.replyEmbeds(EmbedUtil.getReplyEmbed(true, desc)).setEphemeral(true).queue();
+                GiveawayManager manager = instance.getGiveawayManager();
+                Giveaway giveaway = manager.listGiveaways().get(name);
+                if (giveaway != null && giveaway.shouldStart()) {
+                    manager.startGiveaway(giveaway);
+                    instance.getLogger().info("Giveaway started: " + giveaway.name());
+                }
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             instance.getLogger().severe("Error creating giveaway! " + e.getMessage());
-            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, "Error creating giveaway! Please try again.\n" + e.getCause())).setEphemeral(true).queue();
+            String error = String.join(",", Arrays.stream(e.getSuppressed()).map(Throwable::getMessage).toArray(String[]::new));
+            event.replyEmbeds(EmbedUtil.getReplyEmbed(false, "Error creating giveaway! Please try again.\n" + error)).setEphemeral(true).queue();
         }
     }
 

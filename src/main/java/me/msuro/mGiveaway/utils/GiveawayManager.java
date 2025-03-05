@@ -33,6 +33,11 @@ public class GiveawayManager {
         ConfigUtil.getConfig().set(ConfigUtil.EMBED_ID.replace("%s", giveaway.name()), id);
         ConfigUtil.saveConfig();
         giveaways.put(giveaway.name(), giveaway);
+        String message = ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_GLOBAL_ON_START);
+        Bukkit.broadcastMessage(TextUtil.process(message
+                .replace("%winners%", String.valueOf(giveaway.winCount()))
+                .replace("%prize%", giveaway.minecraftPrize())
+                .replace("%time_left%", giveaway.getTimeLeft())));
     }
 
     public void endGiveaway(Giveaway giveaway) {
@@ -58,7 +63,11 @@ public class GiveawayManager {
             }
         });
         instance.getLogger().info("Ended giveaway: " + giveaway.name() + " with " + winners.size() + " winners. [" + giveaway.entries().size() + " entries]");
-
+        String message = ConfigUtil.getAndValidate(ConfigUtil.GIVEAWAY_INFO_GLOBAL_ON_END);
+        String winnerList = String.join(", ", giveaway.winners().values());
+        Bukkit.broadcastMessage(TextUtil.process(message
+                .replace("%winners%", winnerList)
+                .replace("%prize%", giveaway.minecraftPrize())));
     }
 
     /**

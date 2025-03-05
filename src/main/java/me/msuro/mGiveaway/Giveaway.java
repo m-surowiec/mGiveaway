@@ -22,7 +22,7 @@ public record Giveaway(
         State                   state,           // REQUIRED - The current state of the giveaway (PENDING, STARTED, ENDED).
         HashMap<String, String> entries,         // REQUIRED - A map of Discord user IDs to Minecraft usernames (entries).
         List<String>            prizeCommands,   // REQUIRED - A list of RewardCommand objects (command + execution mode).
-        HashMap<String, String> winners,         // OPTIONAL - A list of winner Discord user IDs.  Empty initially.
+        HashMap<String, String> winners,         // OPTIONAL - A map of Discord user IDs to Minecraft usernames (winners). Null initially.
         List<Requirement>       requirements     // REQUIRED - A list of entry requirements.
         ) {
 
@@ -91,10 +91,11 @@ public record Giveaway(
     /**
      * Returns whether the giveaway should start immediately.
      * This is determined by the state, scheduled start time and the presence of a force-start flag. (From the discord command)
+     *
      * @return True if the giveaway should start immediately, false otherwise.
      */
     public boolean shouldStart() {
-        return state == State.NOT_STARTED && (startTimeParsed == null || (startTimeParsed().isBefore(LocalDateTime.now()) && ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null));
+        return state == State.NOT_STARTED && (startTimeParsed == null || startTimeParsed.isBefore(LocalDateTime.now()) || ConfigUtil.getOptional(ConfigUtil.FORCE_START.replace("%s", name)) != null);
     }
 
     /**
